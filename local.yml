@@ -1,0 +1,22 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./backend/docker/local/postgres/Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - finbank_local_db:/var/lib/postgresql/data
+    env_file:
+      - ./.envs/.env.local
+    networks:
+      - finbank_local_nw
+
+networks:
+  finbank_local_nw:
+    external: true
+
+volumes:
+  finbank_local_db:
+
+
