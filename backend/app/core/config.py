@@ -10,9 +10,9 @@ class Settings(BaseSettings):
         extra='ignore'
     )
     
-    API_V1_STR: str = ""
-    PROJECT_NAME: str = ""
-    PROJECT_DESCRIPTION: str = ""
-    SITE_NAME: str = ""
+    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str = "Finbank_API"
+    PROJECT_DESCRIPTION: str = "Welcome to Financial Tech with FastAPI"
+    SITE_NAME: str = "Finbank"
 
 settings = Settings()
