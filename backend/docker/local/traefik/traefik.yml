@@ -20,7 +20,7 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     watch: true
-    exposeByDefault: false
+    exposedByDefault: false
     network: finbank_local_nw
 
 
