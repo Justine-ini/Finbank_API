@@ -16,4 +16,19 @@ class Settings(BaseSettings):
     SITE_NAME: str = ""
     DATABASE_URL: str = ""
 
+    MAIL_FROM: str = ""
+    MAIL_FROM_NAME: str = ""
+    SMTP_HOST: str = ""
+    SMTP_PORT: int
+    MAILPIT_UI_PORT: int
+
+    REDIS_HOST: str = ""
+    REDIS_PORT: int
+    REDIS_DB: int
+
+    RABBITMQ_HOST: str = ""
+    RABBITMQ_POST: int
+    RABBITMQ_USER: str = ""
+    RABBITMQ_PASSWORD: str = ""
+
 settings = Settings()
