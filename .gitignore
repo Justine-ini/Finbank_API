@@ -11,7 +11,9 @@
 .envs/.env.local
 .venv/
 
-
+# # Logs
+backend/app/logs/
+*.log
 
 __pycache__/
 *.py[cod]
