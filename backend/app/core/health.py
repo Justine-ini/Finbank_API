@@ -26,7 +26,7 @@ class HealthCheck:
         self._retry_delays: Dict[str, float] = {}
         self._max_retries: Dict[str, int] = {}
         self._lock = asyncio.Lock()
-        self. _dependencies: Dict[str, set[str]] = {}
+        self._dependencies: Dict[str, set[str]] = {}
 
         self._cache_duration: timedelta = timedelta(seconds=25)
         self._cache_status: Optional[Dict[str, Any]] = None
@@ -43,7 +43,12 @@ class HealthCheck:
                 )
 
     async def add_service(
-            self, service_name: str, check_function: Callable[[], Awaitable[bool]], timeout: float=5.0, retry_delay: float = 1.0, max_retries: int = 3, depends_on: list[str] | None = None
+            self, service_name: str, 
+            check_function: Callable[[], Awaitable[bool]], 
+            timeout: float=5.0, 
+            retry_delay: float = 1.0, 
+            max_retries: int = 3, 
+            depends_on: list[str] | None = None
     )-> None:
         self._services[service_name] = ServiceStatus.STARTING
         self._check_functions[service_name] = check_function
@@ -131,10 +136,10 @@ class HealthCheck:
                     if is_healthy:
                         async with self._lock:
                             self._services[service_name] = ServiceStatus.HEALTHY
-                            self._last_check[service_name] = datetime.now()
+                            self._last_check[service_name] = datetime.now(timezone.utc)
 
                             if attempt > 0:
-                                logger.info(f"Service {service_name} recovered after {metrics["attempts"]} attempts")
+                                logger.info(f'Service {service_name} recovered after {metrics["attempts"]} attempts')
 
                         return ServiceStatus.HEALTHY
                     
