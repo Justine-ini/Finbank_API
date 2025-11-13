@@ -9,15 +9,15 @@ class SecurityQuestionSchema(str, Enum):
     FAVORITE_COLOR = "favorite_color"
     BIRTH_CITY = "birth_city"
 
-@classmethod
-def get_description(cls, value: "SecurityQuestionSchema") -> str:
-    description = {
-        cls.MOTHER_MAIDEN_NAME: "What is the name of your mother?",
-        cls.CHILDHOOD_FRIEND: "What is the name of your childhood friend?",
-        cls.FAVORITE_COLOR: "What is your favorite color?",
-        cls.BIRTH_CITY: "What is the name of the city you were born?"
-    }
-    return description.get(value, "Unknown security question")
+    @classmethod
+    def get_description(cls, value: "SecurityQuestionSchema") -> str:
+        description = {
+            cls.MOTHER_MAIDEN_NAME: "What is the name of your mother?",
+            cls.CHILDHOOD_FRIEND: "What is the name of your childhood friend?",
+            cls.FAVORITE_COLOR: "What is your favorite color?",
+            cls.BIRTH_CITY: "What is the name of the city you were born?"
+        }
+        return description.get(value, "Unknown security question")
 
 
 class AccountStatusSchema(str, Enum):
