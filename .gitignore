@@ -11,6 +11,9 @@
 .envs/.env.local
 .venv/
 
+
+migrations/
+
 # # Logs
 backend/app/logs/
 *.log
