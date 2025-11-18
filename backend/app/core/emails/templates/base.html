@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            padding: 20px 0px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .content {
+            padding: 20px 0px;
+        }
+        .footer {
+            padding: 20px 0px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% block header %}{% endblock %}</h1>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer">
+            {% block footer %}
+            <p>If you have any questions, feel free to contact us at <a href="mailto:{{support_email}}">{{support_email}}</a>.
+            </p>
+            <p>
+                Thanks for using our service! &copy; {{site_name}} Team. All rights reserved.
+            </p>
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

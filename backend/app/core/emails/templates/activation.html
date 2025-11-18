@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Account Activation{% endblock %}
+
+{% block header %}Activate Your Account{% endblock %}
+
+{% block content %}
+<h2>Welcome to {{site_name}}</h2>
+<p>Thank you for creating an account with us. Please click the link below to activate your account:</p>
+<p><a href="{{activation_url}}" style="background-color: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">Activate My Account</a></p>
+
+<p>If the button above does not work, please copy and paste the following link into your web browser:</p>
+<div style="word-break: break-all; background-color: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace;">
+    {{activation_url}}
+</div>
+<p>This link will expire in {{expiry_time}} minutes.</p>
+<p>If you did not create this account, please ignore this email.</p>
+<p>Best regards,<br>The {{site_name}} Team</p>
+{% endblock %}
