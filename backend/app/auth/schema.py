@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 from sqlmodel import SQLModel, Field
 from pydantic import EmailStr, field_validator
@@ -35,7 +36,7 @@ class RoleChoicsSchema(str, Enum):
     TELLER = "teller"
 
 
-class BASE_USER_SCHEMA(SQLModel):
+class BaseUserSchema(SQLModel):
     username: str | None = Field(default=None, max_length=12, unique=True)
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     first_name: str = Field(max_length=30)
@@ -49,7 +50,7 @@ class BASE_USER_SCHEMA(SQLModel):
     account_status: AccountStatusSchema = Field(default=AccountStatusSchema.INACTIVE)
     role: RoleChoicsSchema = Field(default=RoleChoicsSchema.CUSTOMER)
 
-class UserCreateSchema(BASE_USER_SCHEMA):
+class UserCreateSchema(BaseUserSchema):
     password: str = Field(min_length=8, max_length=40)
     confirm_password: str = Field(min_length=8, max_length=40)
 
@@ -67,3 +68,20 @@ class UserCreateSchema(BASE_USER_SCHEMA):
             )
         return v
 
+class USerReadSchema(BaseUserSchema):
+    id: uuid.UUID
+    full_name: str
+
+
+class EmailRequestSchema(SQLModel):
+    email: EmailStr
+
+
+class LoginRequestSchema(SQLModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=40)
+
+
+class OTPVerifyRequestSchema(SQLModel):
+    email: EmailStr
+    otp: str = Field(min_length=6, max_length=6)

@@ -4,10 +4,10 @@ from sqlmodel import Field, Column
 from pydantic import computed_field
 from sqlalchemy.dielects import postgresql as pg
 from sqlalchemy import text, func
-from backend.app.auth.schema import BASE_USER_SCHEMA, RoleChoicsSchema
+from backend.app.auth.schema import BaseUserSchema, RoleChoicsSchema
 
 
-class User(BASE_USER_SCHEMA, table=True):
+class User(BaseUserSchema, table=True):
     id: uuid.UUID = Field(sa_column=Column(
         pg.UUID(as_uuid=True),
         primary_key=True,
