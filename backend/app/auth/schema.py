@@ -27,7 +27,7 @@ class AccountStatusSchema(str, Enum):
     LOCKED = "locked"
     PENDING = "pending"
 
-class RoleChoicsSchema(str, Enum):
+class RoleChoicesSchema(str, Enum):
     CUSTOMER = "customer"
     ACCOUNT_EXECUTIVE = "account_executive"
     BRANCH_MANAGER = "branch_manager"
@@ -43,12 +43,12 @@ class BaseUserSchema(SQLModel):
     middle_name: str | None = Field(max_length=30, default=None)
     last_name: str = Field(max_length=30)
     id_no: int = Field(unique=True, gt=0)
-    active: bool = False
+    is_active: bool = False
     is_superuser: bool = False
     security_question: SecurityQuestionSchema = Field(max_length=30)
     security_answer: str = Field(max_length=30)
     account_status: AccountStatusSchema = Field(default=AccountStatusSchema.INACTIVE)
-    role: RoleChoicsSchema = Field(default=RoleChoicsSchema.CUSTOMER)
+    role: RoleChoicesSchema = Field(default=RoleChoicesSchema.CUSTOMER)
 
 class UserCreateSchema(BaseUserSchema):
     password: str = Field(min_length=8, max_length=40)

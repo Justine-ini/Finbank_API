@@ -22,7 +22,7 @@ logger.add(
     level="DEBUG" if settings.ENVIRONMENT == "local" else "INFO",
     filter=lambda record: record["level"].no <= logger.level("WARNING").no,
     rotation="10MB",
-    retention="30 days",
+    retention="1 day",
     compression="zip",
 )
 
@@ -31,7 +31,7 @@ logger.add(
     format=LOG_FORMAT,
     level="ERROR",
     rotation="10MB",
-    retention="30 days",
+    retention="1 day",
     compression="zip",
     backtrace=True,
     diagnose=True

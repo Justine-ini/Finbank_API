@@ -16,6 +16,6 @@ email_conf = ConnectionConfig(
     MAIL_STARTTLS = False,
     USE_CREDENTIALS = False,
     VALIDATE_CERTS = False,
-    TEMPLATES_FOLDER = TEMPLATES_DIR
+    TEMPLATE_FOLDER = TEMPLATES_DIR
 )
 fastmail = FastMail(email_conf)
