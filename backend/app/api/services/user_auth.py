@@ -55,7 +55,7 @@ class UserAuthService:
         if not include_inactive:
            statement = statement.where(User.is_active)
         result = await session.exec(statement)
-        user = result.first()
+        user = result.one_or_none()
         return user
     
     async def check_user_email_exists(
