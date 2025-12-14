@@ -3,7 +3,7 @@
 {% block content %}{% endblock %}
 
 {% block footer %}
-    If you have any questions, feel free to contact us at {{support_email}}.
+If you have any questions, feel free to contact us at {{support_email}}.
 
-    Thanks for using our service! © {{site_name}} Team. All rights reserved.
+Thanks for using our service! © {{site_name}} Team. All rights reserved.
 {% endblock %}

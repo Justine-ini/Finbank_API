@@ -31,9 +31,10 @@ async def request_login_otp(
                         "before your account is temporarily locked."
                     )
                 else:
-                    error_message = "Your account has been temporarily locked due"
-                    f" to multiple failed login attempts. Please try again after {settings.LOCKOUT_DURATION_MINUTES} minutes."
-
+                    error_message = (
+                        f"Your account has been temporarily locked due to multiple failed login attempts. "
+                        f"Please try again after {settings.LOCKOUT_DURATION_MINUTES} minutes."
+                    )
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, 
                     detail={

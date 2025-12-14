@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Account Temporary Lockout{% endblock %}
+
+{% block header %}Account Security Alert{% endblock %}
+
+{% block content %}
+<p>Hello,</p>
+<p>We're sorry to inform you that your account has been temporarily locked due to multiple failed login attempts.</p>
+<p>Your account will be unlocked automatically after {{unlock_duration}} minutes.</p>
+<p>If you did not attempt to login to your account, we recommend;</p>
+
+<ul style="list-style-type: none; padding-left: 0;">
+    <li style="margin: 10px 0">1. Change your password immediately after your account unlocks</li>
+    <li style="margin: 10px 0">2. Contact our support team if you believe your account has been compromised</li>
+    <li style="margin: 10px 0">3. Check your email for any suspicious activity</li>
+</ul>
+<p> Time of Lockout: {{lockout_time}}</p>
+<p> Account will be unlocked automatically after {{unlock_time}} minutes.</p>
+<p>If you need immediate assistance, please contact our support team.</p>
+
+
+<p>Best regards,<br>The {{site_name}} Team</p>
+{% endblock %}
