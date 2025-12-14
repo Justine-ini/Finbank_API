@@ -12,7 +12,7 @@ from backend.app.auth.schema import EmailRequestSchema
 
 logger = get_logger()
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["auth"])
 @router.get("/activate/{token}", status_code=status.HTTP_200_OK)
 async def activate_user(
     token: str,

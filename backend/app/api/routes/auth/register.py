@@ -7,7 +7,7 @@ from backend.app.api.services.user_auth import user_auth_service
 
 logger = get_logger()
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post(
     "/register",
