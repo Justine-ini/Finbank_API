@@ -98,3 +98,13 @@ def delete_auth_cookies(response: Response) -> None:
     response.delete_cookie(settings.COOKIE_ACCESS_NAME)
     response.delete_cookie(settings.COOKIE_REFRESH_NAME)
     response.delete_cookie(settings.COOKIE_LOGGED_IN_NAME)
+
+
+def create_password_reset_token(id: uuid.UUID) -> str:
+    payload = {
+        "id": str(id),
+        "type": "password_reset",
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES),
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)

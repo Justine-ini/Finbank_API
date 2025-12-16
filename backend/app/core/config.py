@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     COOKIE_SAMESITE: str = "lax"
     COOKIE_PATH: str = "/"
     SIGNING_KEY: str = ""
+    PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES: int = 3 if ENVIRONMENT == "local" else 5
 
 
 
