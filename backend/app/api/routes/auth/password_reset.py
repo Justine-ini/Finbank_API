@@ -4,8 +4,12 @@ from backend.app.auth.schema import PasswordResetRequestSchema, PasswordResetCon
 from backend.app.core.db import get_session
 from backend.app.api.services.user_auth import user_auth_service
 from backend.app.core.services.password_reset import send_password_reset_email
+from backend.app.core.services.account_lockout import send_account_lockout_email
 from backend.app.core.logging import get_logger
 from backend.app.auth.schema import AccountStatusSchema
+
+from datetime import datetime, timedelta, timezone
+from backend.app.core.config import settings
 
 
 logger = get_logger()
@@ -25,6 +29,9 @@ async def request_password_reset(
                 await send_password_reset_email(user.email, user.id)
 
             else:
+                lockout_time = datetime.now(timezone.utc)
+                unlock_time = lockout_time + timedelta(minutes=settings.LOCKOUT_DURATION_MINUTES)
+                await send_account_lockout_email(user.email, unlock_time)
                 logger.warning(f"Password reset attempted for locked account: {user.email}")
             
         return {"message": "If an account with that email exists, a password reset link has been sent."}

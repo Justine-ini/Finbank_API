@@ -85,8 +85,8 @@ async def verify_login_otp(
 
         await user_auth_service.reset_user_state(user, session, clear_otp=True, log_action=True)
 
-        access_token = create_jwt_token(user.id)
-        refresh_token = create_jwt_token(user.id)
+        access_token = create_jwt_token(user.id, settings.COOKIE_ACCESS_NAME)
+        refresh_token = create_jwt_token(user.id, settings.COOKIE_REFRESH_NAME)
 
         set_auth_cookies(response, access_token, refresh_token)
 

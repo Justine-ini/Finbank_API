@@ -43,14 +43,19 @@ def create_activation_token(id: uuid.UUID)-> str:
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def create_jwt_token(id: uuid.UUID, type: str = settings.COOKIE_ACCESS_NAME)-> str:
-    expire_minutes = (
-        settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES if type == settings.COOKIE_ACCESS_NAME else settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
-    )
+
+def create_jwt_token(id: uuid.UUID, type: str = settings.COOKIE_ACCESS_NAME) -> str:
+    if type == settings.COOKIE_ACCESS_NAME:
+        expire_delta = timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    elif type == settings.COOKIE_REFRESH_NAME:
+        expire_delta = timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    else:
+        raise ValueError(f"Invalid token type: {type}")
+    
     payload = {
         "id": str(id),
         "type": type,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=expire_minutes),
+        "exp": datetime.now(timezone.utc) + expire_delta,
         "iat": datetime.now(timezone.utc),
     }
     return jwt.encode(payload, settings.SIGNING_KEY, algorithm=settings.JWT_ALGORITHM)
