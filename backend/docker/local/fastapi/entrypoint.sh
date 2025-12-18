@@ -45,4 +45,6 @@ END
 
 echo >&2 'PostgresSQL is ready to accept connections'
 
+alembic upgrade head
+
 exec "$@"

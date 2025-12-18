@@ -16,6 +16,7 @@ click==8.3.0
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
+cloudinary==1.39.1
 dnspython==2.8.0
 email_validator==2.2.0
 fastapi==0.120.3
@@ -39,13 +40,17 @@ markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
 packaging==25.0
+phonenumbers==8.13.53
+pillow==11.1.0
 prometheus_client==0.23.1
 prompt_toolkit==3.0.52
 psycopg==3.2.12
 psycopg-binary==3.2.12
 psycopg-pool==3.2.7
+pycountry==24.6.1
 pycparser==2.23
 pydantic==2.12.3
+pydantic-extra-types==2.10.2
 pydantic-settings==2.7.0
 pydantic_core==2.41.4
 Pygments==2.19.2
