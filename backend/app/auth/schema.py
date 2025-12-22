@@ -1,6 +1,6 @@
 import uuid
 from enum import Enum
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Column
 from pydantic import EmailStr, field_validator
 from fastapi import HTTPException, status
 

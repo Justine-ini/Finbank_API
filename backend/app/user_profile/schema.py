@@ -1,8 +1,10 @@
 from enum import Enum
 from datetime import date
 from sqlmodel import SQLModel, Field
-from pydantic_extra_types import PhoneNumber
-from pydantic_extra_types import CountryShortName
+from pydantic import field_validator
+from pydantic_extra_types.phone_numbers import PhoneNumber
+from pydantic_extra_types.country import CountryShortName
+from backend.app.user_profile.utils import validate_id_dates
 
 
 
@@ -64,3 +66,11 @@ class ProfileBaseSchema(SQLModel):
     profile_photo_url: str | None = Field(default=None)
     id_photo_url: str | None = Field(default=None)
     signature_photo_url: str | None = Field(default=None)
+
+
+class ProfileCreateSchema(ProfileBaseSchema):
+    @field_validator("id_expiry_date")
+    def validate_id_dates(cls, v, values):
+        if "id_issue_date" in values.data:
+            validate_id_dates(values.data["id_issue_date"], v)
+        return v

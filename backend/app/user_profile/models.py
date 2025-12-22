@@ -20,12 +20,7 @@ class Profile(ProfileBaseSchema, table=True):
 
     user_id: uuid.UUID = Field(
         foreign_key="user.id",
-        nullable=False,
-        unique=True,
-        index=True,
-        sa_column=Column(
-            pg.UUID(as_uuid=True),
-        ),
+        ondelete="CASCADE"
     )
 
     created_at: datetime = Field(
