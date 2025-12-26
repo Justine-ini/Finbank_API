@@ -1,6 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 from backend.app.core.emails.config import TEMPLATES_DIR
-from backend.app.core.emails.tasks import send_email_task
+from backend.app.core.tasks.email import send_email_task
 from backend.app.core.logging import get_logger
 
 logger = get_logger()

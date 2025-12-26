@@ -35,7 +35,7 @@ celery_app.conf.update(
 )
 
 celery_app.autodiscover_tasks(
-    packages=["backend.app.core.emails"],
+    packages=["backend.app.core.tasks"],
     related_name="tasks",
     force=True,
 )
