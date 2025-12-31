@@ -20,8 +20,8 @@ class EmailTemplate:
     async def send_email(
         cls, email_to: str | list[str], context: dict, subject_override: str | None = None
     ) -> None:
+        recipients_list = [email_to] if isinstance(email_to, str) else email_to
         try:
-            recipients_list = [email_to] if isinstance(email_to, str) else email_to
             if not cls.template_name or not cls.template_name_plain:
                 raise ValueError(
                     "Both HTML and plain text email templates are required"
