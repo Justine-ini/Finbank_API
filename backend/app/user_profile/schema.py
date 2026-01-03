@@ -6,23 +6,23 @@ from pydantic_extra_types.country import CountryShortName
 from backend.app.auth.schema import RoleChoicesSchema
 from backend.app.user_profile.utils import validate_id_dates
 from .enums import (
-    SalutationSchema,
-    MaritalStatusSchema,
-    GenderSchema,
-    IdentificationTypeSchema,
-    EmploymentStatusSchema,
+    SalutationEnum,
+    MaritalStatusEnum,
+    GenderEnum,
+    IdentificationTypeEnum,
+    EmploymentStatusEnum,
 )
 
 class ProfileBaseSchema(SQLModel):
-    title: SalutationSchema
-    gender: GenderSchema
-    marital_status: MaritalStatusSchema
+    title: SalutationEnum
+    gender: GenderEnum
+    marital_status: MaritalStatusEnum
     date_of_birth: date
     country_of_birth: CountryShortName
     place_of_birth: str
-    identification_type: IdentificationTypeSchema
+    identification_type: IdentificationTypeEnum
     phone_number: PhoneNumber
-    means_of_identification: IdentificationTypeSchema
+    means_of_identification: IdentificationTypeEnum
     id_issued_date: date
     id_expiry_date: date
     passport_number: str | None = Field(default=None)
@@ -30,7 +30,7 @@ class ProfileBaseSchema(SQLModel):
     address: str
     city: str
     country: str
-    employment_status: EmploymentStatusSchema
+    employment_status: EmploymentStatusEnum
     employer_name: str | None = Field(default=None)
     employer_address: str | None = Field(default=None)
     employer_city: str | None = Field(default=None)
@@ -51,7 +51,7 @@ class ProfileBaseSchema(SQLModel):
     
 #     @model_validator(mode="after")
 #     def validate_passport_number(self):
-#         if self.identification_type == IdentificationTypeSchema.PASSPORT:
+#         if self.identification_type == IdentificationTypeEnum.PASSPORT:
 #             if not self.passport_number:
 #                 raise ValueError(
 #                     "passport_number is required when identification_type is PASSPORT"
@@ -69,7 +69,7 @@ class ProfileCreateSchema(ProfileBaseSchema):
 
     @model_validator(mode="after")
     def validate_passport_number(self):
-        if self.identification_type == IdentificationTypeSchema.PASSPORT:
+        if self.identification_type == IdentificationTypeEnum.PASSPORT:
             if not self.passport_number:
                 raise ValueError(
                     "passport_number is required when identification_type is PASSPORT"
@@ -79,15 +79,15 @@ class ProfileCreateSchema(ProfileBaseSchema):
 
 
 class ProfileUpdateSchema(SQLModel):
-    title: SalutationSchema | None = None
-    gender: GenderSchema | None = None
-    marital_status: MaritalStatusSchema | None = None
+    title: SalutationEnum | None = None
+    gender: GenderEnum | None = None
+    marital_status: MaritalStatusEnum | None = None
     date_of_birth: date | None = None
     country_of_birth: CountryShortName | None = None
     place_of_birth: str | None = None
-    identification_type: IdentificationTypeSchema | None = None
+    identification_type: IdentificationTypeEnum | None = None
     phone_number: PhoneNumber | None = None
-    means_of_identification: IdentificationTypeSchema | None = None
+    means_of_identification: IdentificationTypeEnum | None = None
     id_issued_date: date | None = None
     id_expiry_date: date | None = None
     passport_number: str | None = None
@@ -95,7 +95,7 @@ class ProfileUpdateSchema(SQLModel):
     address: str | None = None
     city: str | None = None
     country: str | None = None
-    employment_status: EmploymentStatusSchema | None = None
+    employment_status: EmploymentStatusEnum | None = None
     employer_name: str | None = None
     employer_address: str | None = None
     employer_city: str | None = None
@@ -112,7 +112,7 @@ class ProfileUpdateSchema(SQLModel):
     
     # @model_validator(mode="after")
     # def validate_passport_number(self):
-    #     if self.identification_type == IdentificationTypeSchema.PASSPORT:
+    #     if self.identification_type == IdentificationTypeEnum.PASSPORT:
     #         if not self.passport_number:
     #             raise ValueError(
     #                 "passport_number is required when identification_type is PASSPORT"
@@ -129,7 +129,7 @@ class ProfileUpdateSchema(SQLModel):
     @model_validator(mode="after")
     def validate_passport_number(self):
         # Only enforce if identification_type is being updated
-        if self.identification_type == IdentificationTypeSchema.PASSPORT:
+        if self.identification_type == IdentificationTypeEnum.PASSPORT:
             if not self.passport_number:
                 raise ValueError(
                     "passport_number is required when identification_type is PASSPORT"

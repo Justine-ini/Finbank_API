@@ -8,7 +8,7 @@ from backend.app.user_profile.schema import (
     ProfileUpdateSchema, 
     RoleChoicesSchema
 )
-from backend.app.user_profile.enums import ImageTypeSchema
+from backend.app.user_profile.enums import ImageTypeEnum
 from backend.app.core.tasks.image_upload import upload_profile_image_task
 from backend.app.auth.models import User
 from backend.app.core.logging import get_logger
@@ -124,7 +124,7 @@ async def update_user_profile(
 
 async def initiate_image_upload(
     file_content: bytes,
-    image_type: ImageTypeSchema,
+    image_type: ImageTypeEnum,
     content_type: str,
     user_id: uuid.UUID,
 ) -> str:
@@ -149,7 +149,7 @@ async def initiate_image_upload(
     
 async def update_profile_image_url(
     user_id: uuid.UUID,
-    image_type: ImageTypeSchema,
+    image_type: ImageTypeEnum,
     image_url: str,
     session: AsyncSession
 ) -> Profile:
@@ -166,9 +166,9 @@ async def update_profile_image_url(
             )
 
         field_mapping = {
-            ImageTypeSchema.PROFILE_PHOTO: "profile_photo_url",
-            ImageTypeSchema.ID_PHOTO: "id_photo_url",
-            ImageTypeSchema.SIGNATURE_PHOTO: "signature_photo_url",
+            ImageTypeEnum.PROFILE_PHOTO: "profile_photo_url",
+            ImageTypeEnum.ID_PHOTO: "id_photo_url",
+            ImageTypeEnum.SIGNATURE_PHOTO: "signature_photo_url",
         }
 
         field_name = field_mapping.get(image_type)
