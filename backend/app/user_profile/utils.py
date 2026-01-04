@@ -8,6 +8,6 @@ def validate_id_dates(issue_date: date, expiry_date: date) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "status": "error",
-                "message": "Identification expiry date must be after the issued date."
+                "message": "The expiry date of the identification document must be later than its issue date."
             },
         )

@@ -4,12 +4,13 @@ from datetime import datetime, timezone
 from sqlmodel import Field, Column, Relationship
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import text, func
-from backend.app.user_profile.schema import ProfileBaseSchema
+from backend.app.next_of_kin.schema import NextOfKinBaseSchema
 
 if TYPE_CHECKING:
     from backend.app.auth.models import User
 
-class Profile(ProfileBaseSchema, table=True): # type: ignore
+
+class NextOfKin(NextOfKinBaseSchema, table=True): # type: ignore
     id: uuid.UUID = Field(
         sa_column=Column(
             pg.UUID(as_uuid=True),
@@ -41,4 +42,6 @@ class Profile(ProfileBaseSchema, table=True): # type: ignore
         ),
     )
 
-    user: "User" = Relationship(back_populates="profile")
+    user_id: uuid.UUID = Field(foreign_key="user.id")
+
+    user: "User" = Relationship(back_populates="next_of_kins")

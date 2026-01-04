@@ -33,7 +33,7 @@ async def list_user_profile(
         ]
 
         return PaginatedProfileResponseSchema(
-            profiles=profile_responses, 
+            profile=profile_responses, 
             total=total_count,
             skip=skip,
             limit=limit

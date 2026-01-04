@@ -1,5 +1,6 @@
 import uuid
 from enum import Enum
+from sqlalchemy import Enum as SAEnum
 from sqlmodel import SQLModel, Field, Column
 from pydantic import EmailStr, field_validator
 from fastapi import HTTPException, status
@@ -45,10 +46,46 @@ class BaseUserSchema(SQLModel):
     id_no: int = Field(unique=True, gt=0)
     is_active: bool = False
     is_superuser: bool = False
-    security_question: SecurityQuestionSchema = Field(max_length=30)
+    security_question: SecurityQuestionSchema = Field(
+        sa_column=Column(
+            SAEnum(
+                SecurityQuestionSchema,
+                name="security_question_enum",
+                create_type=False
+            ),
+            nullable=False
+        )
+    )
     security_answer: str = Field(max_length=30)
-    account_status: AccountStatusSchema = Field(default=AccountStatusSchema.INACTIVE)
-    role: RoleChoicesSchema = Field(default=RoleChoicesSchema.CUSTOMER)
+    account_status: AccountStatusSchema = Field(
+        default=AccountStatusSchema.INACTIVE,
+        sa_column=Column(
+            SAEnum(
+                AccountStatusSchema,
+                name="account_status_enum",
+                create_type=False
+            ),
+            nullable=False
+        )
+    )
+
+    role: RoleChoicesSchema = Field(
+        default=RoleChoicesSchema.CUSTOMER,
+        sa_column=Column(
+            SAEnum(
+                RoleChoicesSchema,
+                name="role_enum",
+                create_type=False
+            ),
+            nullable=False
+        )
+    )
+
+
+
+
+
+
 
 class UserCreateSchema(BaseUserSchema):
     password: str = Field(min_length=8, max_length=40)
