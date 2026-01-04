@@ -37,3 +37,17 @@ class NextOfKinCreateSchema(NextOfKinBaseSchema):
 class NextOfKinReadSchema(NextOfKinBaseSchema):
     id: uuid.UUID
     user_id: uuid.UUID
+
+
+class NextOfKinUpdateSchema(SQLModel):
+    full_name: str | None = None
+    relationship: RelationshipTypeEnum | None = None
+    email: EmailStr | None = None
+    phone_number: PhoneNumber | None = None
+    address: str | None = None
+    city: str | None = None
+    country: CountryShortName | None = None
+    nationality: str | None = None
+    id_number: str | None = None 
+    passport_number: str | None = None
+    is_primary: bool | None = None
