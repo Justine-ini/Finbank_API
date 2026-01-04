@@ -51,3 +51,4 @@ class NextOfKinUpdateSchema(SQLModel):
     id_number: str | None = None 
     passport_number: str | None = None
     is_primary: bool | None = None
+
