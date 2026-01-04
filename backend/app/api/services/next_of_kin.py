@@ -2,11 +2,13 @@ from uuid import UUID
 from backend.app.user_profile.models import Profile
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, col
+from backend.app.user_profile.schema import RoleChoicesSchema
 from backend.app.next_of_kin.schema import (
     NextOfKinCreateSchema,
     NextOfKinReadSchema
 )
+from backend.app.auth.models import User
 from backend.app.next_of_kin.models import NextOfKin
 from backend.app.core.logging import get_logger
 
@@ -80,5 +82,32 @@ async def create_next_of_kin(
             }
         )
 
+
+async def get_user_next_of_kins(
+        user_id: UUID,
+        session: AsyncSession,
+) -> list[NextOfKin]:
+    try:
+
+        statement = select(NextOfKin).where(NextOfKin.user_id==user_id)
+
+        result = await session.exec(statement)
+        next_of_kins = list(result.all())
+        print(next_of_kins)
+
+        return next_of_kins
+    
+    except HTTPException as httpex:
+        raise httpex
+    except Exception as e:
+        logger.error(f"Error fetching all user next of kins: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":"Failed to fetch user next of  kins",
+                "action":"Please try again later"
+            }
+        )
 
 
