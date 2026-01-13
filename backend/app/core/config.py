@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30 if ENVIRONMENT == "local" else 15
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 1
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 3
     COOKIE_SECURE: bool = False if ENVIRONMENT == "local" else True
     COOKIE_ACCESS_NAME: str = "access_token"
     COOKIE_REFRESH_NAME: str = "refresh_token"
@@ -58,8 +58,14 @@ class Settings(BaseSettings):
     CLOUDINARY_API_SECRET: str = ""
 
     ALLOWED_MIME_TYPES: list[str] = ["image/jpeg", "image/png", "image/jpg"]
+    # Max upload size in bytes (e.g. 5 MB)
     MAX_FILE_SIZE: int = 5 * 1024 *1024
+    # Max width OR height in pixels
     MAX_DIMENSION: int = 4096
+    # Max total pixel count (width × height)
+    MAX_IMAGE_PIXELS: int = 25_000_000
+
+    ALLOWED_IMAGE_FORMATS = {"jpeg", "png"}
 
 
 settings = Settings()

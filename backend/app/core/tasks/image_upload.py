@@ -69,16 +69,16 @@ def upload_profile_image_task(
         if not upload_result.get('secure_url'):
             raise Exception(
                 "Upload successful but secure URL not received from Cloudinary.")
+        
+        eager = upload_result.get("eager") or []
+        thumbnail_url = eager[1].get("secure_url") if len(eager) > 1 else None
+
 
         response: UploadResponse = {
             "url": upload_result['secure_url'],
             "image_type": image_type,
             "public_id": upload_result['public_id'],
-            "thumbnail_url": (
-                upload_result.get('eager', [{}])[1].get('secure_url')
-                if len(upload_result.get('eager', [])) > 1
-                else None
-            ),
+            "thumbnail_url": thumbnail_url,
         }
         for key in ["url", "image_type", "public_id"]:
             if not response.get(key):

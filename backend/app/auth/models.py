@@ -10,6 +10,7 @@ from backend.app.auth.schema import BaseUserSchema, RoleChoicesSchema
 if TYPE_CHECKING:
     from backend.app.user_profile.models import Profile
     from backend.app.next_of_kin.models import NextOfKin
+    from backend.app.bank_account.models import BankAccount
 
 class User(BaseUserSchema, table=True): # type: ignore
 
@@ -60,6 +61,7 @@ class User(BaseUserSchema, table=True): # type: ignore
     next_of_kins: list["NextOfKin"] = Relationship(
         back_populates="user"
     )
+    bank_accounts: list[BankAccount] = Relationship(back_populates="user")
 
     @computed_field
     @property

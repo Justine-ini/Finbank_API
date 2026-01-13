@@ -6,8 +6,24 @@ from backend.app.core.logging import get_logger
 
 logger = get_logger()
 
+Image.MAX_IMAGE_PIXELS = settings.MAX_IMAGE_PIXELS
+
 
 def validate_image(file_data: bytes) -> Tuple[bool, str]:
+    """
+    Validates an uploaded image using raw bytes.
+
+    This function ensures:
+    - The file is not empty
+    - The file size is within allowed limits
+    - The file is a real image (not a renamed file)
+    - The image format is supported
+    - The image dimensions are within limits
+    - The image is fully readable (not truncated or corrupted)
+
+    Returns:
+        (bool, str): Validation result and message
+    """
     try:
 
         # Check if file is empty
@@ -34,7 +50,7 @@ def validate_image(file_data: bytes) -> Tuple[bool, str]:
         image_stream.seek(0)  # Reset stream position to the beginning
         with Image.open(image_stream) as img:
             # Check if image format is supported
-            if img.format is None or img.format.lower() not in ["jpeg", "jpg", "png"]:
+            if img.format is None or img.format.lower() not in settings.ALLOWED_IMAGE_FORMATS:
                 return (False, f"Unsupported image format: {img.format}. Allowed formats are JPEG, JPG, PNG.")
 
         # Check if image dimensions exceed the maximum allowed dimension

@@ -99,8 +99,7 @@ async def update_user_profile(
             )
         update_data = profile_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
-            if field not in ["profile_photo_url", "id_photo_url", "signature_photo_url"]:
-                setattr(profile, field, value)
+            setattr(profile, field, value)
 
         await session.commit()
         await session.refresh(profile)
@@ -153,6 +152,13 @@ async def update_profile_image_url(
     image_url: str,
     session: AsyncSession
 ) -> Profile:
+    
+    field_mapping = {
+            ImageTypeEnum.PROFILE_PHOTO: "profile_photo_url",
+            ImageTypeEnum.ID_PHOTO: "id_photo_url",
+            ImageTypeEnum.SIGNATURE_PHOTO: "signature_photo_url",
+        }
+    
     try:
         profile = await get_user_profile(user_id, session)
         if not profile:
@@ -164,12 +170,6 @@ async def update_profile_image_url(
                     "action": "Please create a profile first."
                 },
             )
-
-        field_mapping = {
-            ImageTypeEnum.PROFILE_PHOTO: "profile_photo_url",
-            ImageTypeEnum.ID_PHOTO: "id_photo_url",
-            ImageTypeEnum.SIGNATURE_PHOTO: "signature_photo_url",
-        }
 
         field_name = field_mapping.get(image_type)
         if not field_name:

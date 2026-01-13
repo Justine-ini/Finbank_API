@@ -82,11 +82,6 @@ class BaseUserSchema(SQLModel):
     )
 
 
-
-
-
-
-
 class UserCreateSchema(BaseUserSchema):
     password: str = Field(min_length=8, max_length=40)
     confirm_password: str = Field(min_length=8, max_length=40)
@@ -94,7 +89,7 @@ class UserCreateSchema(BaseUserSchema):
     # This means this function below will run automatically whenever Pydantic is validating the confirm_password field.
     @field_validator("confirm_password")
     def validate_confirm_password(cls, v, values):
-        if "password" in values.data and v!= values.data["password"]:
+        if "password" in values.data and v != values.data["password"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail = {
@@ -137,9 +132,6 @@ class PasswordResetConfirmSchema(SQLModel):
         min_length=8,
         max_length=40
     )
-
-    new_password: str = Field(min_length=8, max_length=40)
-    confirm_new_password: str = Field(min_length=8, max_length=40)
 
     @field_validator("confirm_new_password")
     def validate_password_match(cls, v, values):

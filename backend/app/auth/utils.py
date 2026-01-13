@@ -1,5 +1,6 @@
 import random
 import string
+import secrets
 import uuid
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -10,10 +11,9 @@ from argon2.exceptions import VerifyMismatchError
 
 _ph = PasswordHasher()
 
-def generate_otp(length: int = 6)-> str:
-    otp = "".join(random.choices(string.digits, k=length))
+def generate_otp(length: int = 6) -> str:
+    otp = "".join(secrets.choice(string.digits) for _ in range(length))
     return otp
-
 
 def generate_password_hash(password: str)-> str:
     return _ph.hash(password)
@@ -99,7 +99,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str |
 
 
 def delete_auth_cookies(response: Response) -> None:
-    """Delete authentication cookies directly (optimal for 3 cookies)."""
+    """Delete authentication cookies directly"""
     response.delete_cookie(settings.COOKIE_ACCESS_NAME)
     response.delete_cookie(settings.COOKIE_REFRESH_NAME)
     response.delete_cookie(settings.COOKIE_LOGGED_IN_NAME)
