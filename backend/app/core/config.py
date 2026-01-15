@@ -68,6 +68,16 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_FORMATS = {"jpeg", "png"}
 
 
+    BANK_CODE: str = "" 
+    BANK_BRANCH_CODE: str = ""
+    CURRENCY_CODE_USD: str = ""
+    CURRENCY_CODE_EURO: str = ""
+    CURRENCY_CODE_GBP: str = ""
+    CURRENCY_CODE_NGR: str = ""
+    MAX_BANK_ACCOUNTS: int = 3
+
+
+
 settings = Settings()
 
 cloudinary.config(

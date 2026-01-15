@@ -1,0 +1,21 @@
+{% extends "base.txt" %}
+
+{% block header %}Welcome to {{site_name}} {% endblock %}
+
+{% block content %}
+Dear {{fullname}}
+
+We're excited to inform you that your new bank account has been created successfully.
+
+- Account Number {{account_number}}
+- Account Name {{account_name}}
+- Account Type {{account_type}}
+- Currency {{currency}}
+
+
+Important: To fully activate your account, please visit our nearest bank branch with your {{identification_type}} or any other valid id document for verification
+
+If you need immediate assistance, please contact our support team.
+
+Best regards,<br>The {{site_name}} Team
+{% endblock %}
