@@ -44,7 +44,7 @@ class BankAccount(BankAccountBaseSchema, table=True): # type: ignore
     kyc_verified_on: datetime | None = Field(
         sa_column=Column(
             pg.TIMESTAMP(timezone=True), 
-            nullable=False,
+            nullable=True,
         ),
     )
 

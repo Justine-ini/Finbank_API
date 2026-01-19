@@ -65,9 +65,9 @@ class Settings(BaseSettings):
     # Max total pixel count (width × height)
     MAX_IMAGE_PIXELS: int = 25_000_000
 
-    ALLOWED_IMAGE_FORMATS = {"jpeg", "png"}
+    ALLOWED_IMAGE_FORMATS: list[str] = ["jpeg", "png"]
 
-
+    
     BANK_CODE: str = "" 
     BANK_BRANCH_CODE: str = ""
     CURRENCY_CODE_USD: str = ""

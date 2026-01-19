@@ -58,7 +58,7 @@ class BankAccountReadSchema(BankAccountBaseSchema):
     created_at: datetime
     updated_at: datetime
 
-class BankAccountUpdateSchema(BankAccountBaseSchema):
+class BankAccountUpdateSchema(SQLModel):
     account_name: str | None = None
     is_primary: bool | None = None
     account_status: AccountStatusEnum | None = None

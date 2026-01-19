@@ -1,5 +1,4 @@
 from uuid import UUID
-from backend.app.user_profile.models import Profile
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, col
@@ -22,7 +21,7 @@ async def get_next_of_kin_count(user_id: UUID, session: AsyncSession) -> int:
     return len(result.all())
 
 async def get_primary_next_of_kin(user_id: UUID, session: AsyncSession) -> NextOfKin | None:
-    statement = select(NextOfKin).where(NextOfKin.user_id==user_id, NextOfKin.is_primary)
+    statement = select(NextOfKin).where(NextOfKin.user_id==user_id, NextOfKin.is_primary==True)
     result = await session.exec(statement)
     return result.first()
 
@@ -49,15 +48,18 @@ async def validate_next_of_kin_creation(user_id: UUID, is_primary: bool, session
             )
         
     
+        
+    
 async def create_next_of_kin(
         user_id: UUID,
         next_of_kin_data: NextOfKinCreateSchema, 
         session: AsyncSession) -> NextOfKinReadSchema:
     try:
-        current_count = await validate_next_of_kin_creation(user_id, next_of_kin_data.is_primary, session)
+        current_count = await get_next_of_kin_count(user_id, session)
+        await validate_next_of_kin_creation(user_id, next_of_kin_data.is_primary, session)
 
         if current_count == 0:
-            next_of_kin_data.is_primary = True
+            next_of_kin_data = next_of_kin_data.model_copy(update={"is_primary": True})
 
         next_of_kin = NextOfKin(**next_of_kin_data.model_dump())
         next_of_kin.user_id = user_id

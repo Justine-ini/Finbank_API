@@ -70,6 +70,9 @@ def generate_account_number(currency:AccountCurrencyEnum) -> str:
         check_digit = calculate_luhn_check_digit(partial_account_number)
 
         account_number = f"{partial_account_number}{check_digit}"
+
+        return account_number 
+    
     except HTTPException as httex:
         logger.error(f"HTTP Exception in account number generation: {httex}")
     except Exception as e:

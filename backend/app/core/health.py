@@ -27,7 +27,6 @@ class HealthCheck:
         self._max_retries: Dict[str, int] = {}
         self._lock = asyncio.Lock()
         self._dependencies: Dict[str, set[str]] = {}
-
         self._cache_duration: timedelta = timedelta(seconds=25)
         self._cache_status: Optional[Dict[str, Any]] = None
         self._last_check_time: Optional[datetime] = None
@@ -120,6 +119,7 @@ class HealthCheck:
         
         if service_name not in self._check_functions:
             raise ValueError(f"Unknown service: {service_name}")
+        
         check_func = self._check_functions[service_name]
         timeout = self._timeouts.get(service_name, 5.0)
         max_retries = self._max_retries[service_name]
