@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Bank Account Activated{% endblock %}
+
+{% block content %}
+Dear {{fullname}}
+
+Great news! Your bank account has been successfully activated, following the verification of your KYC.
+< style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+Account Details
+
+- Account Number {{account_number}}
+- Account Name {{account_name}}
+- Account Type {{account_type}}
+- Currency {{currency}}
+
+Your account is now fully operational. You can now:
+
+* Make deposits and withdrawals
+* View your account statement and transaction history
+* Use mobile banking and internet banking services
+* Access your account information anytime and anywhere
+
+If you notice any suspicious activity, please contact our support team immediately.
+
+Thank you for choosing {{site_name}}.
+{% endblock %}

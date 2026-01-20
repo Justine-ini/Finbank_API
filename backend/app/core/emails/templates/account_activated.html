@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Bank Account Activated{% endblock %}
+
+{% block header %}Your account has been activated{% endblock %}
+
+{% block content %}
+<p>Dear {{fullname}},</p>
+
+<p>Great news! Your bank account has been successfully activated, following the verification of your KYC.</p>
+<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+    <h3 style="margin-top: 0;">Account Details</h3>
+    <ul style="list-style-type: none; padding-left: 0;">
+        <li style="margin: 10px 0;"><strong>Account Number</strong> {{account_number}}
+        </li>
+        <li style="margin: 10px 0;"><strong>Account Name</strong> {{account_name}}
+        </li>
+        <li style="margin: 10px 0;"><strong>Account Type</strong> {{account_type}}
+        </li>
+        <li style="margin: 10px 0;"><strong>Currency</strong> {{currency}}
+        </li>
+    </ul>
+</div>
+
+<div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20ipx 0;">
+    <p style="margin: 0;"><strong>Your account is now fully operational</strong>You can now:</p>
+    <ul style="margin-top: 10px;">
+        <li>Make deposits and withdrawals</li>
+        <li>View your account statement and transaction history</li>
+        <li>Use mobile banking and internet banking services</li>
+        <li>Access your account information anytime and anywhere</li>
+    </ul>
+</div>
+
+<p>If you notice any suspicious activity, please contact our support team {{support_email}} immediately.</p>
+
+<p>Best regards,<br>The {{site_name}} Team</p>
+{% endblock %}
