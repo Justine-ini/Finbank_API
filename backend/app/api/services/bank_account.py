@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from backend.app.bank_account.models import BankAccount
-from backend.app.bank_account.schema import BankAccountCreateSchema
+from backend.app.bank_account.schema import BankAccountCreateSchema, BankAccountReadSchema
 from backend.app.bank_account.utils import generate_account_number
 from backend.app.auth.models import User
 from backend.app.core.logging import get_logger
@@ -112,5 +112,142 @@ async def create_bank_account(
             detail={
                 "status":"error",
                 "message":"An error occurred while creating the bank account."
+            }
+        )
+    
+
+async def update_bank_account_primary_status(
+        user_id: UUID,
+        bank_account_id: UUID,
+        is_primary: bool,
+        session: AsyncSession
+    ) -> None:
+    try:
+        statement = select(BankAccount).where(
+            BankAccount.id == bank_account_id,
+            BankAccount.user_id == user_id
+        )
+        result = await session.exec(statement)
+        bank_account = result.first()
+
+        if not bank_account:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status":"error",
+                    "message":"Bank account not found."
+                }
+            )
+
+        if is_primary:
+            statement = select(BankAccount).where(
+                BankAccount.user_id == user_id,
+                BankAccount.is_primary == True,
+                BankAccount.id != bank_account_id
+            )
+            result = await session.exec(statement)
+            existing_primary = result.first()
+
+            if existing_primary:
+                existing_primary.is_primary = False
+                session.add(existing_primary)
+
+        bank_account.is_primary = is_primary
+        session.add(bank_account)
+        await session.commit()
+
+        logger.info(f"Bank account {bank_account.account_number} primary status updated for user ID {user_id}")
+
+    except HTTPException as httpex:
+        raise httpex
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Failed to update primary status for bank account {bank_account_id} for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":"An error occurred while updating the bank account."
+            }
+        )
+    
+
+async def delete_bank_account(
+        user_id: UUID,
+        bank_account_id: UUID,
+        session: AsyncSession
+    ) -> None:
+    try:
+        statement = select(BankAccount).where(
+            BankAccount.id == bank_account_id,
+            BankAccount.user_id == user_id
+        )
+        result = await session.exec(statement)
+        bank_account = result.first()
+
+        if not bank_account:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status":"error",
+                    "message":"Bank account not found."
+                }
+            )
+
+        statement = select(BankAccount).where(BankAccount.user_id == user_id)
+        result = await session.exec(statement)
+        user_accounts = result.all()
+
+        if len(user_accounts) <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status":"error",
+                    "message":"Cannot delete the only bank account."
+                }
+            )
+
+
+        await session.delete(bank_account)
+        await session.commit()
+
+        logger.info(f"Bank account {bank_account.account_number} deleted for user ID {user_id}")
+
+    except HTTPException as httpex:
+        raise httpex
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Failed to delete bank account {bank_account_id} for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":"An error occurred while deleting the bank account."
+            }
+        )
+    
+async def get_user_bank_accounts(
+        user_id: UUID,
+        session: AsyncSession
+    ) -> list[BankAccount]:
+    try:
+        statement = select(BankAccount).where(BankAccount.user_id == user_id)
+        result = await session.exec(statement)
+        bank_accounts = result.all()
+
+        logger.info(f"Fetched {len(bank_accounts)} bank accounts for user ID {user_id}")
+
+        return [BankAccountReadSchema.model_validate(account) for account in bank_accounts]
+    
+    except HTTPException as httpex:
+        raise httpex
+    except Exception as e:
+        logger.error(f"Error fetching bank accounts for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":"Failed to fetch user bank accounts",
+                "action":"Please try again later"
             }
         )

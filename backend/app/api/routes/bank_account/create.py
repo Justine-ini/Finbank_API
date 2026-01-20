@@ -41,9 +41,9 @@ async def create_bank_account_route(
                 email_to=current_user.email, 
                 fullname=current_user.full_name,
                 account_number=bank_account.account_number,
-                account_type=bank_account.account_type,
+                account_type=bank_account.account_type.value,
                 account_name=bank_account.account_name,
-                currency=bank_account.currency.value,
+                currency=bank_account.account_currency.value,
                 identification_type=current_user.profile.means_of_identification.value
                 )
         except Exception as email_ex:
