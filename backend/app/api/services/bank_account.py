@@ -1,10 +1,12 @@
 from uuid import UUID
+from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from backend.app.bank_account.models import BankAccount
 from backend.app.bank_account.schema import BankAccountCreateSchema, BankAccountReadSchema
 from backend.app.bank_account.utils import generate_account_number
+from backend.app.bank_account.enums import AccountStatusEnum
 from backend.app.auth.models import User
 from backend.app.core.logging import get_logger
 from backend.app.core.config import settings
@@ -112,6 +114,65 @@ async def create_bank_account(
             detail={
                 "status":"error",
                 "message":"An error occurred while creating the bank account."
+            }
+        )
+
+
+async def activate_bank_account(
+        account_id: UUID,
+        verified_by: UUID,
+        session: AsyncSession
+)-> tuple[BankAccount, User]:
+    try:
+        statement = select(BankAccount, User).join(User).where(BankAccount.id == account_id, BankAccount.user_id != verified_by)
+        result = await session.exec(statement)
+        bank_account = result.first()
+
+        if not bank_account:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status":"error",
+                    "message":"Bank account not found."
+                }
+            )
+        
+        account, user = bank_account
+
+        if account.account_status == AccountStatusEnum.Active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status":"error",
+                    "message":"Bank account is already activated."
+                }
+            )
+
+        account.kyc_submitted = True
+        account.kyc_verified = True
+        account.kyc_verified_by = verified_by
+        account.kyc_verified_on = datetime.now(timezone.utc)
+        account.account_status = AccountStatusEnum.Active
+
+        session.add(account)
+        await session.commit()
+        await session.refresh(account)
+
+        logger.info(f"Bank account {account.account_number} activated by user {verified_by}")
+
+        return account, user
+
+    except HTTPException as httpex:
+        await session.rollback()
+        raise httpex
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Failed to activate bank account {account_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":"Failed to activate the bank account."
             }
         )
     
