@@ -1,0 +1,23 @@
+{% extends "base.txt" %}
+
+{% block header %}Transaction Alert{% endblock %}
+
+{% block content %}
+Dear {{fullname}},
+
+A transaction has been processed on your account with the following details:
+    
+
+Transaction Type {{action}}
+Amount {{currency}} {{amount}}
+Account Name {{account_name}}
+Account Number {{account_number}}
+Description {{description}}
+Date {{transaction_date}}
+Reference {{reference}}
+Available Balance {{currency}} {{balance}}
+
+Security Tip: If you did not authorize this transaction, please contact our support team immediately {{support_email}}.
+
+Best regards,<br>The {{site_name}} Team
+{% endblock %}
