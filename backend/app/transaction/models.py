@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 from datetime import datetime, timezone
-from sqlmodel import Field, Column, Relationship
+from sqlmodel import Field, Column, Relationship, SQLModel
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import text, func
@@ -87,3 +87,35 @@ class Transaction(TransactionBaseSchema, table=True): # type: ignore
     )
 
     
+
+class IdempotencyKey(SQLModel, table=True): # type: ignore
+    id: uuid.UUID = Field(
+        sa_column=Column(
+            pg.UUID(as_uuid=True),
+            primary_key=True,
+        ),
+        default_factory=uuid.uuid4
+    )
+
+    key: str = Field(index=True, unique=True)
+
+    user_id: uuid.UUID = Field(foreign_key="user.id")
+    endpoint: str
+    response_code: int
+    response_body: dict = Field(sa_column=Column(JSONB))
+
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(
+            pg.TIMESTAMP(timezone=True), 
+            nullable=False, 
+            server_default=text("CURRENT_TIMESTAMP"),
+        )
+    )
+    expires_at: datetime = Field(
+        sa_column=Column(
+            pg.TIMESTAMP(timezone=True), 
+            nullable=False, 
+            server_default=text("CURRENT_TIMESTAMP"),
+        )
+    )
