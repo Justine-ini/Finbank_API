@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block header %} {% if is_sender %}Transfer Confirmation{% else %}Transfer Received{% endif %}{% endblock %}
+
+{% block content %}
+Dear {{user_name}},
+
+{% if is_sender %}Your transfer has been sent successfully.{% else %}You have received a transfer.{% endif %} Here are the details:
+    {% if is_sender %}
+    Amount Sent: {{from_currency}} {{amount}}
+    {% if conversion_applied %}
+    Converted Amount: {{to_currency}} {{converted_amount}}
+
+    Exchange Rate: 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}
+    Conversion fee: {{from_currency}} {{conversion_fee}}
+    {% endif %}
+
+    Recipient Name: {{counterparty_name}}
+    Recipient Account: {{counterparty_account}}
+    {% else %}
+
+    Amount Received: {{to_currency}} {{amount}}
+
+    {% if conversion_applied %}
+    Original Amount: {{from_currency}} {{amount}}
+
+    Exchange Rate: 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}
+
+    {% endif %}
+
+    From: {{counterparty_name}}
+    {% endif %}
+
+    Description: {{description}}
+    Reference: {{reference}}       
+    Date: {{transaction_date}}
+    Your Available Balance: {{user_currency}} {{user_balance}}
+
+{% if is_sender %}
+
+    Security Tip: If you did not initiate this transfer, please contact our support team immediately.
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Transfer Authorization OTP{% endblock %}
+
+{% block header %}One-Time Password (OTP) for Transfer Authorization{% endblock %}
+
+{% block content %}
+<h2>Hello,</h2>
+
+<p>Your One-Time Password (OTP) for transfer authorization is:</p>
+<h2 style="text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">{{otp}}</h2>
+
+<p>This OTP will expire in {{expiry_time}} minutes. Please use it to authorize your transfer.</p>
+
+<p>If you did not request this OTP, please contact our support team immediately.</p>
+
+<p>Best regards,<br>The {{site_name}} Team</p>
+{% endblock %}

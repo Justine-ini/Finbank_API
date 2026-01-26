@@ -1,4 +1,6 @@
 import secrets
+from decimal import Decimal, ROUND_HALF_UP
+from typing import Tuple
 from backend.app.bank_account.enums import AccountCurrencyEnum
 from backend.app.core.config import settings
 from backend.app.core.logging import get_logger
@@ -86,4 +88,77 @@ def generate_account_number(currency:AccountCurrencyEnum) -> str:
         )
 
 
+EXCHANGE_RATES = {
+    "USD": {
+        "EUR": Decimal("0.8455"),
+        "GBP": Decimal("0.7329"),
+        "NGN": Decimal("1420.75")
+    },
+    "EUR": {
+        "USD": Decimal("1.1828"),
+        "GBP": Decimal("0.8668"),
+        "NGN": Decimal("1508.00")
+    },
+    "GBP": {
+        "USD": Decimal("1.3645"),
+        "EUR": Decimal("1.1536"),
+        "NGN": Decimal("2019.65")
+    },
+    "NGN": {
+        "USD": Decimal("0.00070"),
+        "EUR": Decimal("0.00066"),
+        "GBP": Decimal("0.00050")
+    }
+}
 
+CONVERSION_FEE_RATE = Decimal("0.02")  # 2% conversion fee
+
+
+def get_exchange_rate(
+    from_currency: AccountCurrencyEnum,
+    to_currency: AccountCurrencyEnum,
+) -> Decimal:
+    if from_currency == to_currency:
+        return Decimal("1.0000")
+
+    try:
+        rate = EXCHANGE_RATES[from_currency.value][to_currency.value]
+    except KeyError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "message": f"Exchange rate from {from_currency} to {to_currency} not available."
+            }
+        )
+
+    return rate.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+
+
+def calculate_conversion(
+    amount: Decimal,
+    from_currency: AccountCurrencyEnum,
+    to_currency: AccountCurrencyEnum
+) -> Tuple[Decimal, Decimal, Decimal]:
+    
+    if from_currency == to_currency:
+        return amount, Decimal("1.00"), Decimal("0.00")
+    try:
+        exchange_rate = get_exchange_rate(from_currency, to_currency)
+
+        converted_amount = (amount * exchange_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        conversion_fee = (converted_amount * CONVERSION_FEE_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        net_amount = (converted_amount - conversion_fee).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        return converted_amount, conversion_fee, net_amount
+    except Exception as e:
+        logger.error(f"Error calculating conversion: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status":"error",
+                "message":f"Failed to calculate currency conversion: {str(e)}"
+            }
+)

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %} {% if is_sender %}Transfer Sent{% else %}Transfer Received{% endif %} Notification {% endblock %}
+
+{% block header %} {% if is_sender %}Transfer Confirmation{% else %}Transfer Received{% endif %}{% endblock %}
+
+{% block content %}
+<p>Dear {{user_name}},</p>
+
+<p>{% if is_sender %}Your transfer has been sent successfully.{% else %}You have received a transfer.{% endif %} Here are the details:</p>
+<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+
+    <ul style="list-style-type: none; padding-left: 0;">
+        {% if is_sender %}
+        <li style="margin: 10px 0;"><strong>Transfer Amount</strong>{{from_currency}} {{transfer_amount}}</li>
+        {% if conversion_applied %}
+        <li style="margin: 10px 0;"><strong>Converted Amount</strong>{{to_currency}} {{converted_amount}}</li>
+        
+        <li style="margin: 10px 0;"><strong>Exchange Rate</strong> 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}</li>
+
+        </li>
+        <li style="margin: 10px 0;"><strong>Conversion fee</strong>{{from_currency}} {{conversion_fee}}
+        </li>
+        {% endif %}
+        <li style="margin: 10px 0;"><strong>Recipient Name</strong>{{counterparty_name}}</li>
+        <li style="margin: 10px 0;"><strong>Recipient Account</strong>{{counterparty_account}}</li>
+        {% else %}
+        <li style="margin: 10px 0;"><strong>Amount Received</strong>{{to_currency}} {{amount}}</li>
+
+        {% if conversion_applied %}
+        <li style="margin: 10px 0;"><strong>Original Amount</strong>{{from_currency}} {{amount}}</li>
+        <li style="margin: 10px 0;"><strong>Exchange Rate</strong> 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}</li>
+        {% endif %}
+        <li style="margin: 10px 0;"><strong>From:</strong>{{counterparty_name}}</li>
+        {% endif %}
+        <li style="margin: 10px 0;"><strong>Description</strong>{{description}}</li>
+        <li style="margin: 10px 0;"><strong>Reference</strong>{{reference}}</li>
+        <li style="margin: 10px 0;"><strong>Date</strong>{{transaction_date}}</li>
+        <li style="margin: 10px 0;"><strong>Your Available Balance</strong>{{user_currency}} {{user_balance}}</li>
+    </ul>
+</div>
+
+{% if is_sender %}
+<div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20ipx 0;">
+    <p style="margin: 0;"><strong>Security Tip:</strong>If you did not initiate this transfer, please contact our support team immediately.</p>  
+</div>
+{% endif %}
+
+{% endblock %}
