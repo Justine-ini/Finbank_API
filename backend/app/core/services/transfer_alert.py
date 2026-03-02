@@ -20,7 +20,6 @@ async def send_transfer_alert_email(
     sender_name: str,
     receiver_email: str,
     receiver_name: str,
-    sender_account_number: str,
     receiver_account_number: str,
     amount: Decimal,
     converted_amount: Decimal,

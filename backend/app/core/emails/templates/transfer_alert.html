@@ -12,31 +12,31 @@
 
     <ul style="list-style-type: none; padding-left: 0;">
         {% if is_sender %}
-        <li style="margin: 10px 0;"><strong>Transfer Amount</strong>{{from_currency}} {{transfer_amount}}</li>
+        <li style="margin: 10px 0;"><strong>Transfer Amount</strong> {{from_currency}} {{amount}}</li>
         {% if conversion_applied %}
-        <li style="margin: 10px 0;"><strong>Converted Amount</strong>{{to_currency}} {{converted_amount}}</li>
+        <li style="margin: 10px 0;"><strong>Converted Amount</strong> {{to_currency}} {{converted_amount}}</li>
         
         <li style="margin: 10px 0;"><strong>Exchange Rate</strong> 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}</li>
 
         </li>
-        <li style="margin: 10px 0;"><strong>Conversion fee</strong>{{from_currency}} {{conversion_fee}}
+        <li style="margin: 10px 0;"><strong>Conversion fee</strong> {{from_currency}} {{conversion_fee}}
         </li>
         {% endif %}
-        <li style="margin: 10px 0;"><strong>Recipient Name</strong>{{counterparty_name}}</li>
-        <li style="margin: 10px 0;"><strong>Recipient Account</strong>{{counterparty_account}}</li>
+        <li style="margin: 10px 0;"><strong>Recipient Name</strong> {{counterparty_name}}</li>
+        <li style="margin: 10px 0;"><strong>Recipient Account</strong> {{counterparty_account}}</li>
         {% else %}
-        <li style="margin: 10px 0;"><strong>Amount Received</strong>{{to_currency}} {{amount}}</li>
+        <li style="margin: 10px 0;"><strong>Amount Received</strong> {{to_currency}} {{amount}}</li>
 
         {% if conversion_applied %}
-        <li style="margin: 10px 0;"><strong>Original Amount</strong>{{from_currency}} {{amount}}</li>
+        <li style="margin: 10px 0;"><strong>Original Amount</strong> {{from_currency}} {{amount}}</li>
         <li style="margin: 10px 0;"><strong>Exchange Rate</strong> 1 {{from_currency}} = {{exchange_rate}} {{to_currency}}</li>
         {% endif %}
-        <li style="margin: 10px 0;"><strong>From:</strong>{{counterparty_name}}</li>
+        <li style="margin: 10px 0;"><strong>From:</strong> {{counterparty_name}}</li>
         {% endif %}
-        <li style="margin: 10px 0;"><strong>Description</strong>{{description}}</li>
-        <li style="margin: 10px 0;"><strong>Reference</strong>{{reference}}</li>
-        <li style="margin: 10px 0;"><strong>Date</strong>{{transaction_date}}</li>
-        <li style="margin: 10px 0;"><strong>Your Available Balance</strong>{{user_currency}} {{user_balance}}</li>
+        <li style="margin: 10px 0;"><strong>Description</strong> {{description}}</li>
+        <li style="margin: 10px 0;"><strong>Reference</strong> {{reference}}</li>
+        <li style="margin: 10px 0;"><strong>Date</strong> {{transaction_date}}</li>
+        <li style="margin: 10px 0;"><strong>Your Available Balance</strong> {{user_currency}} {{user_balance}}</li>
     </ul>
 </div>
 

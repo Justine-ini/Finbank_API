@@ -22,18 +22,19 @@ def get_currency_code(currency: AccountCurrencyEnum) -> str:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
-                "status":"error",
-                "message":f"Invalid currency: {currency}"
+                "status": "error",
+                "message": f"Invalid currency: {currency}"
             }
         )
-    
+
     return currency_code
 
-def split_into_digits(number: str | int)-> list[int]:
+
+def split_into_digits(number: str | int) -> list[int]:
     return [int(digit) for digit in str(number)]
 
 
-def calculate_luhn_check_digit(number:str) -> int:
+def calculate_luhn_check_digit(number: str) -> int:
     digits = split_into_digits(number)
 
     odd_digits = digits[-1::-2]
@@ -48,14 +49,14 @@ def calculate_luhn_check_digit(number:str) -> int:
     return (10 - (total % 10)) % 10
 
 
-def generate_account_number(currency:AccountCurrencyEnum) -> str:
+def generate_account_number(currency: AccountCurrencyEnum) -> str:
     try:
         if not all([settings.BANK_CODE, settings.BANK_BRANCH_CODE]):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={
-                    "status":"error",
-                    "message":"Bank or Branch code not configured"
+                    "status": "error",
+                    "message": "Bank or Branch code not configured"
                 }
             )
         currency_code = get_currency_code(currency)
@@ -73,8 +74,8 @@ def generate_account_number(currency:AccountCurrencyEnum) -> str:
 
         account_number = f"{partial_account_number}{check_digit}"
 
-        return account_number 
-    
+        return account_number
+
     except HTTPException as httex:
         logger.error(f"HTTP Exception in account number generation: {httex}")
     except Exception as e:
@@ -82,33 +83,35 @@ def generate_account_number(currency:AccountCurrencyEnum) -> str:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
-                "status":"error",
-                "message":f"Failed to generate account number: {str(e)}"
+                "status": "error",
+                "message": f"Failed to generate account number: {str(e)}"
             }
         )
 
 
 EXCHANGE_RATES = {
     "USD": {
-        "EUR": Decimal("0.8455"),
-        "GBP": Decimal("0.7329"),
-        "NGN": Decimal("1420.75")
+        "EUR": Decimal("0.93"),
+        "GBP": Decimal("0.79"),
+        "NGR": Decimal("1500.75")
     },
     "EUR": {
-        "USD": Decimal("1.1828"),
-        "GBP": Decimal("0.8668"),
-        "NGN": Decimal("1508.00")
+        "USD": Decimal("1.08"),
+        "GBP": Decimal("0.75"),
+        "NGR": Decimal("1700.12")
     },
     "GBP": {
-        "USD": Decimal("1.3645"),
-        "EUR": Decimal("1.1536"),
-        "NGN": Decimal("2019.65")
+        "USD": Decimal("1.26"),
+        "EUR": Decimal("1.17"),
+        "NGR": Decimal("2019.65")
     },
-    "NGN": {
-        "USD": Decimal("0.00070"),
-        "EUR": Decimal("0.00066"),
-        "GBP": Decimal("0.00050")
+
+    "NGR": {
+        "USD": Decimal("0.00072"),
+        "EUR": Decimal("0.00061"),
+        "GBP": Decimal("0.00053")
     }
+
 }
 
 CONVERSION_FEE_RATE = Decimal("0.02")  # 2% conversion fee
@@ -119,10 +122,12 @@ def get_exchange_rate(
     to_currency: AccountCurrencyEnum,
 ) -> Decimal:
     if from_currency == to_currency:
-        return Decimal("1.0000")
+        return Decimal("1.0")
 
     try:
         rate = EXCHANGE_RATES[from_currency.value][to_currency.value]
+
+        return rate.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
     except KeyError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -132,7 +137,7 @@ def get_exchange_rate(
             }
         )
 
-    return rate.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+    
 
 
 def calculate_conversion(
@@ -140,25 +145,35 @@ def calculate_conversion(
     from_currency: AccountCurrencyEnum,
     to_currency: AccountCurrencyEnum
 ) -> Tuple[Decimal, Decimal, Decimal]:
-    
+
     if from_currency == to_currency:
-        return amount, Decimal("1.00"), Decimal("0.00")
+        return amount, Decimal("1.0"), Decimal("0")
     try:
         exchange_rate = get_exchange_rate(from_currency, to_currency)
 
-        converted_amount = (amount * exchange_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # converted_amount = (
+        #     amount * exchange_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        conversion_fee = (converted_amount * CONVERSION_FEE_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # conversion_fee = (
+        #     converted_amount * CONVERSION_FEE_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        conversion_fee = (
+            amount * CONVERSION_FEE_RATE).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        net_amount = (converted_amount - conversion_fee).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # net_amount = (
+        #     converted_amount - conversion_fee).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        net_amount = amount - conversion_fee
 
-        return converted_amount, conversion_fee, net_amount
+        converted_amount = (
+            net_amount * exchange_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # return converted_amount, conversion_fee, net_amount
+        return converted_amount, exchange_rate, conversion_fee
     except Exception as e:
         logger.error(f"Error calculating conversion: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
-                "status":"error",
-                "message":f"Failed to calculate currency conversion: {str(e)}"
+                "status": "error",
+                "message": f"Failed to calculate currency conversion: {str(e)}"
             }
-)
+        )

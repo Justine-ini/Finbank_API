@@ -62,7 +62,7 @@ services:
       context: .
       dockerfile: ./backend/docker/local/postgres/Dockerfile
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - finbank_local_db:/var/lib/postgresql/data
     env_file:
