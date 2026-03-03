@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from backend.app.core.logging import get_logger
-from backend.app.transaction.schema import DepositRequestSchema, TransactionReadSchema
+from backend.app.transaction.schema import DepositRequestSchema
 from backend.app.transaction.enums import TransactionTypeEnum
 from backend.app.auth.schema import RoleChoicesSchema
 from backend.app.api.routes.auth.dependency import CurrentUser

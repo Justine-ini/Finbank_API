@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block header %}Withdrawal Alert{% endblock %} {% block content %}
+Dear {{fullname}},
+
+
+A withdrawal has been processed on your account with the following details:
+
+Amount: {{currency}} {{amount}}
+Account Name: {{account_name}}
+Account Number: {{account_number}}
+Description: {{description}}
+Date: {{transaction_date}}
+Reference: {{reference}}
+Available Balance: {{currency}} {{balance|round(2)}}
+
+If you did not authorize this withdrawal, please contact our support team immediately {{support_email}}
+
+
+Best regards,<br />The {{site_name}} Team
+{% endblock %}

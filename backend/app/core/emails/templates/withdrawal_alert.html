@@ -1,9 +1,9 @@
 {% extends "base.html" %} {% block title %}Transaction Notification{% endblock
-%} {% block header %}Transaction Alert{% endblock %} {% block content %}
+%} {% block header %}Withdrawal Alert{% endblock %} {% block content %}
 <p>Dear {{fullname}},</p>
 
 <p>
-  A transaction has been processed on your account with the following details:
+  A withdrawal has been processed on your account with the following details:
 </p>
 <div
   style="
@@ -14,7 +14,6 @@
   "
 >
   <ul style="list-style-type: none; padding-left: 0">
-    <li style="margin: 10px 0"><strong>Transaction Type</strong> {{action}}</li>
     <li style="margin: 10px 0">
       <strong>Amount</strong> {{currency}} {{amount}}
     </li>
@@ -28,7 +27,7 @@
     <li style="margin: 10px 0"><strong>Date</strong> {{transaction_date}}</li>
     <li style="margin: 10px 0"><strong>Reference</strong> {{reference}}</li>
     <li style="margin: 10px 0">
-      <strong>Available Balance</strong> {{currency}} {{balance}}
+      <strong>Available Balance</strong> {{currency}} {{balance|round(2)}}
     </li>
   </ul>
 </div>
@@ -42,7 +41,7 @@
   "
 >
   <p style="margin: 0">
-    <strong>Security Tip:</strong>If you did not authorize this transaction,
+    <strong>Security Tip:</strong>If you did not authorize this withdrawal,
     please contact our support team immediately {{support_email}}
   </p>
 </div>

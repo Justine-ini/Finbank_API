@@ -554,14 +554,110 @@ async def complete_transfer(
                 reason=TransactionFailureReasonEnum.SYSTEM_ERROR,
                 details={"error": str(e)},
                 session=session,
-                error_message=" A system error occured"
+                error_message=" A system error occurred"
             )
         await session.rollback()
-        logger.error(f"Failed to complete transfer")
+        logger.error(f"Failed to complete transfer: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "status": "error",
                 "message": "Failed to complete the transfer"
+            }
+        )
+    
+async def process_withdrawal(
+        *,
+        amount: Decimal,
+        account_number: str,
+        username: str,
+        description: str,
+        session: AsyncSession,
+) -> tuple[Transaction, BankAccount, User]:
+    try:
+        statement = (
+            select(BankAccount, User).join(User).where(
+                BankAccount.account_number == account_number, User.username == username)
+        )
+        result = await session.exec(statement)
+        account_user = result.first()
+
+        if not account_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status": "error",
+                    "message": "Bank account not found."
+                }
+            )
+
+        account, account_owner = account_user
+        if account.account_status != AccountStatusEnum.Active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status": "error",
+                    "message": "Cannot withdraw from an inactive bank account."
+                }
+            )
+
+        if Decimal(str(account.balance)) < amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "status": "error",
+                    "message": "Insufficient balance."
+                }
+            )
+
+        reference = f"WDL-{uuid.uuid4().hex[:8].upper()}"
+
+        balance_before = Decimal(str(account.balance))
+        balance_after = balance_before - amount
+
+        new_transaction = Transaction(
+            amount=amount,
+            description=description,
+            reference=reference,
+            transaction_type=TransactionTypeEnum.WITHDRAWAL,
+            transaction_category=TransactionCategoryEnum.DEBIT,
+            status=TransactionStatusEnum.COMPLETED,
+            balance_before=balance_before,
+            balance_after=balance_after,
+            sender_account_id=account.id,
+            sender_id=account_owner.id,
+            completed_at=datetime.now(timezone.utc),
+            transaction_metadata={
+                "currency": account.account_currency.value,
+                "account_number": account.account_number,
+                "withdrawal_method": "Cash Withdrawal"  # This can be dynamic based on the actual withdrawal method used
+            }
+        )
+
+        account.balance = float(balance_after)
+
+        session.add(new_transaction)
+        session.add(account)
+        await session.commit()
+        await session.refresh(new_transaction)
+        await session.refresh(account)
+
+        logger.info(
+            f"Withdrawal transaction {new_transaction.id} processed for account {account.account_number}")
+
+        return new_transaction, account, account_owner
+
+    except HTTPException as httpex:
+        await session.rollback()
+        raise httpex
+    except Exception as e:
+        await session.rollback()
+        logger.error(
+            f"Failed to process withdrawal for account {account_number}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "Failed to process withdrawal."
             }
         )
