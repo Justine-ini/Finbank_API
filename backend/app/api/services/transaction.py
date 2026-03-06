@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, or_, desc, func, any_
 from backend.app.bank_account.models import BankAccount
 from backend.app.transaction.models import Transaction
 from backend.app.transaction.enums import TransactionStatusEnum, TransactionTypeEnum, TransactionCategoryEnum
@@ -74,7 +74,7 @@ async def process_deposit(
             receiver_id=account_owner.id,
             processed_by=teller_id,
             transaction_metadata={
-                "currency": account.account_currency,
+                "account_currency": account.account_currency.value,
                 "account_number": account.account_number,
             }
         )
@@ -258,6 +258,7 @@ async def initiate_transfer(
             sender_id=sender.id,
             receiver_id=receiver.id,
             transaction_metadata={
+                "account_currency": sender_account.account_currency.value,
                 "conversion_rate": str(exchange_rate),
                 "conversion_fee": str(conversion_fee),
                 "original_amount": str(amount),
@@ -628,9 +629,9 @@ async def process_withdrawal(
             sender_id=account_owner.id,
             completed_at=datetime.now(timezone.utc),
             transaction_metadata={
-                "currency": account.account_currency.value,
+                "account_currency": account.account_currency.value,
                 "account_number": account.account_number,
-                "withdrawal_method": "Cash Withdrawal"  # This can be dynamic based on the actual withdrawal method used
+                "withdrawal_method": "Cash Withdrawal",  # This can be dynamic based on the actual withdrawal method used
             }
         )
 
@@ -659,5 +660,102 @@ async def process_withdrawal(
             detail={
                 "status": "error",
                 "message": "Failed to process withdrawal."
+            }
+        )
+
+
+async def get_user_transactions(
+        user_id: uuid.UUID,
+        session: AsyncSession,
+        skip: int = 0,
+        limit: int = 20,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        transaction_type: TransactionTypeEnum | None = None,
+        transaction_category: TransactionCategoryEnum | None = None,
+        transaction_status: TransactionStatusEnum | None = None,
+        min_amount: Decimal | None = None,
+        max_amount: Decimal | None = None
+)-> tuple[list[Transaction], int]:
+    try:
+        # First, get all account IDs associated with the user
+        statement = select(BankAccount.id).where(
+            (BankAccount.user_id == user_id)
+        )
+        result = await session.exec(statement)
+        account_ids = [account_id for account_id in result.all()]
+
+        if not account_ids:
+            return [], 0
+        
+        # Build the base query to fetch transactions where the user is either sender or receiver
+        base_query = select(Transaction).where(
+            or_(
+                Transaction.sender_id == user_id,
+                Transaction.receiver_id == user_id,
+                Transaction.sender_account_id == any_(account_ids),
+                Transaction.receiver_account_id == any_(account_ids)
+            )
+        )
+
+        if start_date:
+            base_query = base_query.where(Transaction.created_at >= start_date)
+        if end_date:
+            base_query = base_query.where(Transaction.created_at <= end_date)
+        if transaction_type:
+            base_query = base_query.where(
+                Transaction.transaction_type == transaction_type)
+        if transaction_category:
+            base_query = base_query.where(
+                Transaction.transaction_category == transaction_category)
+        if transaction_status:
+            base_query = base_query.where(Transaction.status == transaction_status)
+        if min_amount is not None:
+            base_query = base_query.where(Transaction.amount >= min_amount)
+        if max_amount is not None:
+            base_query = base_query.where(Transaction.amount <= max_amount)
+
+        base_query = base_query.order_by(desc(Transaction.created_at))
+
+        # Get total count before applying pagination
+        count_query = select(func.count()).select_from(base_query.subquery())
+        total_result = await session.exec(count_query)
+        total_count = total_result.first() or 0
+
+        paginated_statement = await session.exec(base_query.offset(skip).limit(limit))
+        transactions = list(paginated_statement.all())
+
+        # Enrich transactions with counterparty information for better response data
+        for transaction in transactions:
+            await session.refresh(transaction, ["sender", "receiver", "sender_account", "receiver_account"])
+            if not transaction.transaction_metadata:
+                transaction.transaction_metadata = {}
+            # Determine counterparty details based on whether the user is sender or receiver
+            if transaction.sender_id == user_id:
+                # User is the sender, so counterparty is the receiver
+                if transaction.receiver:
+                    transaction.transaction_metadata["counterparty_name"] = transaction.receiver.full_name
+                # If receiver account exists, add account number to metadata
+                if transaction.receiver_account:
+                    transaction.transaction_metadata["counterparty_account"] = transaction.receiver_account.account_number
+            else:
+                # User is the receiver, so counterparty is the sender
+                if transaction.sender:
+                    # If sender exists, add sender's full name to metadata
+                    transaction.transaction_metadata["counterparty_name"] = transaction.sender.full_name
+                # If sender account exists, add account number to metadata
+                if transaction.sender_account:        
+                    transaction.transaction_metadata["counterparty_account"] = transaction.sender_account.account_number
+
+        return transactions, total_count
+
+    except Exception as e:
+        logger.error(f"Failed to retrieve transactions for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "Failed to retrieve transactions.",
+                "action": "Please try again later"
             }
         )
