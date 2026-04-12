@@ -12,6 +12,7 @@ blinker==1.9.0
 celery==5.3.6
 certifi==2025.10.5
 cffi==2.0.0
+chardet==7.0.1
 click==8.3.0
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
@@ -62,6 +63,7 @@ pytz==2025.2
 PyYAML==6.0.3
 redis==5.0.3
 redisbeat==1.2.6
+reportlab==4.2.2
 rich==14.2.0
 rich-toolkit==0.15.1
 rignore==0.7.2

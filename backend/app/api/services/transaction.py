@@ -1,9 +1,10 @@
 import uuid
 from decimal import Decimal
 from datetime import datetime, timezone, timedelta
+from typing import Any
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select, or_, desc, func, any_
+from sqlmodel import select, or_, desc, func
 from backend.app.bank_account.models import BankAccount
 from backend.app.transaction.models import Transaction
 from backend.app.transaction.enums import TransactionStatusEnum, TransactionTypeEnum, TransactionCategoryEnum
@@ -14,6 +15,7 @@ from backend.app.bank_account.utils import calculate_conversion
 from backend.app.transaction.utils import mark_transaction_failed
 from backend.app.bank_account.enums import AccountStatusEnum
 from backend.app.auth.models import User
+from backend.app.core.tasks.statement import generate_statement_pdf
 from backend.app.core.logging import get_logger
 
 
@@ -240,7 +242,7 @@ async def initiate_transfer(
                     "status": "error",
                     "message": f"Currency conversion failed: {str(e)}"
                 },
-            )
+            ) from e
 
         reference = f"TRF{uuid.uuid4().hex[:8].upper()}"
 
@@ -292,7 +294,7 @@ async def initiate_transfer(
                 "status": "error",
                 "message": "Failed to initiate transfer"
             }
-        )
+        ) from e
 
 
 async def complete_transfer(
@@ -496,7 +498,7 @@ async def complete_transfer(
                     "status": "error",
                     "message": "System error: Invalid converted amount format"
                 }
-            )
+            ) from e
 
         sender_account.balance = float(
             Decimal(str(sender_account.balance)) - transaction.amount
@@ -565,7 +567,7 @@ async def complete_transfer(
                 "status": "error",
                 "message": "Failed to complete the transfer"
             }
-        )
+        ) from e
     
 async def process_withdrawal(
         *,
@@ -661,7 +663,7 @@ async def process_withdrawal(
                 "status": "error",
                 "message": "Failed to process withdrawal."
             }
-        )
+        ) from e
 
 
 async def get_user_transactions(
@@ -693,8 +695,8 @@ async def get_user_transactions(
             or_(
                 Transaction.sender_id == user_id,
                 Transaction.receiver_id == user_id,
-                Transaction.sender_account_id == any_(account_ids),
-                Transaction.receiver_account_id == any_(account_ids)
+                Transaction.sender_account_id.in_(account_ids),
+                Transaction.receiver_account_id.in_(account_ids)
             )
         )
 
@@ -727,25 +729,36 @@ async def get_user_transactions(
 
         # Enrich transactions with counterparty information for better response data
         for transaction in transactions:
-            await session.refresh(transaction, ["sender", "receiver", "sender_account", "receiver_account"])
+            await session.refresh(
+                transaction,
+                ["sender", "receiver", "sender_account", "receiver_account"]
+            )
             if not transaction.transaction_metadata:
                 transaction.transaction_metadata = {}
             # Determine counterparty details based on whether the user is sender or receiver
             if transaction.sender_id == user_id:
                 # User is the sender, so counterparty is the receiver
                 if transaction.receiver:
-                    transaction.transaction_metadata["counterparty_name"] = transaction.receiver.full_name
+                    transaction.transaction_metadata["counterparty_name"] = (
+                        transaction.receiver.full_name
+                    )
                 # If receiver account exists, add account number to metadata
                 if transaction.receiver_account:
-                    transaction.transaction_metadata["counterparty_account"] = transaction.receiver_account.account_number
+                    transaction.transaction_metadata["counterparty_account"] = (
+                        transaction.receiver_account.account_number
+                    )
             else:
                 # User is the receiver, so counterparty is the sender
                 if transaction.sender:
                     # If sender exists, add sender's full name to metadata
-                    transaction.transaction_metadata["counterparty_name"] = transaction.sender.full_name
+                    transaction.transaction_metadata["counterparty_name"] = (
+                        transaction.sender.full_name
+                    )
                 # If sender account exists, add account number to metadata
-                if transaction.sender_account:        
-                    transaction.transaction_metadata["counterparty_account"] = transaction.sender_account.account_number
+                if transaction.sender_account:
+                    transaction.transaction_metadata["counterparty_account"] = (
+                        transaction.sender_account.account_number
+                    )
 
         return transactions, total_count
 
@@ -758,4 +771,203 @@ async def get_user_transactions(
                 "message": "Failed to retrieve transactions.",
                 "action": "Please try again later"
             }
+        ) from e
+
+async def get_user_statement_data(
+    user_id: uuid.UUID,
+    session: AsyncSession,
+    start_date: datetime,
+    end_date: datetime
+) -> tuple[dict[str, Any], list[Transaction]]:
+    try:
+        # Get user
+        user_stmt = select(User).where(User.id == user_id)
+        user_result = await session.exec(user_stmt)
+        user = user_result.first()
+        if not user:
+            raise ValueError("User not found.")
+        
+        full_name = (
+            f"{user.first_name} "
+            f"{user.middle_name + ' ' if user.middle_name else ''}"
+            f" {user.last_name}"
+        ).title().strip()
+
+        user_info = {
+            "full_name": full_name,
+            "username": user.username,
+            "email": user.email,
+        }
+
+        txn_stmt = select(Transaction).where(
+            (Transaction.sender_id == user_id) | (Transaction.receiver_id == user_id),
+            Transaction.created_at >= start_date,
+            Transaction.created_at <= end_date
+        ).order_by(desc(Transaction.created_at))
+
+        txn_result = await session.exec(txn_stmt)
+        transactions = txn_result.all()
+
+        return user_info, list(transactions)
+
+    except Exception as e:
+        logger.error(f"Failed to retrieve statement for user {user_id}: {e}")
+        raise 
+
+async def prepare_statement_data(
+    user_id: uuid.UUID,
+    start_date: datetime,
+    end_date: datetime,
+    session: AsyncSession,
+    account_number: str | None = None
+) -> dict:
+    try:
+        user_query = select(User).where(User.id == user_id)
+        user_result = await session.exec(user_query)
+        user = user_result.first()
+        if not user:
+            raise ValueError(f"User {user_id} not found.")
+        
+        if account_number:
+            account_query = select(BankAccount).where(
+                BankAccount.account_number == account_number,
+                BankAccount.user_id == user_id
+            )
+            account_result = await session.exec(account_query)
+            account = account_result.first()
+            if not account:
+                raise ValueError(f"Account {account_number} not found for user {user_id}.")
+            accounts = [account]
+            
+        else:
+            account_query = select(BankAccount).where(
+                BankAccount.user_id == user_id
+            )
+            account_result = await session.exec(account_query)
+            accounts = account_result.all()
+            if not accounts:
+                raise ValueError(f"No accounts found for user {user_id}.")
+    
+        account_details = []
+
+        for account in accounts:
+            if account.account_number:
+                account_details.append({
+                    "account_number": account.account_number,
+                    "account_name": account.account_name,
+                    "account_type": account.account_type.value,
+                    "account_currency": account.account_currency.value,
+                    "balance": account.balance,
+                })
+        account_ids = [account.id for account in accounts]
+        
+        transaction_stmt = select(Transaction).where(
+            or_(
+                Transaction.sender_account_id.in_(account_ids),
+                Transaction.receiver_account_id.in_(account_ids)
+            ),
+            Transaction.created_at >= start_date,
+            Transaction.created_at <= end_date,
+            Transaction.status == TransactionStatusEnum.COMPLETED
+        ).order_by(desc(Transaction.created_at))
+        
+        transaction_result = await session.exec(transaction_stmt)
+        transactions = transaction_result.all()
+
+        user_data = {
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "full_name": f"{user.first_name} {user.middle_name + ' ' if user.middle_name else ''}{user.last_name}".title().strip(),
+            "accounts": account_details,
+        }
+
+        transaction_data = []
+
+        for txn in transactions:
+            sender_account = (
+                await session.get(BankAccount, txn.sender_account_id)
+                if txn.sender_account_id else None
+            )
+            receiver_account = (
+                await session.get(BankAccount, txn.receiver_account_id)
+                if txn.receiver_account_id else None
+            )
+            transaction_data.append({
+                "reference": txn.reference,
+                "amount": str(txn.amount),
+                "description": txn.description,
+                "created_at": txn.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "transaction_type": txn.transaction_type.value,
+                "transaction_category": txn.transaction_category.value,
+                "balance_after": str(txn.balance_after),
+                "sender_account": (
+                    sender_account.account_number
+                    if sender_account else None
+                ),
+                "receiver_account": (
+                    receiver_account.account_number
+                    if receiver_account else None
+                ),
+                "metadata": txn.transaction_metadata,
+            })
+            
+        return {
+            "user": user_data,
+            "transactions": transaction_data,
+            "start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "is_single_account": bool(account_number),
+        }
+    except ValueError as e:
+        logger.error(f"Failed to prepare statement data for user {user_id}: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Failed to prepare statement data for user {user_id}: {e}")
+        raise
+
+
+async def generate_user_statement(
+    user_id: uuid.UUID,
+    start_date: datetime,
+    end_date: datetime,
+    session: AsyncSession,
+    account_number: str | None = None
+) -> dict:
+    try:
+        statement_data = await prepare_statement_data(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
+            session=session,
+            account_number=account_number
         )
+        statement_id = str(uuid.uuid4())
+
+        task = generate_statement_pdf.delay(
+            statement_data=statement_data,
+            statement_id=statement_id,
+        )
+        return {
+            "status": "pending",
+            "task_id": task.id,
+            "statement_id": statement_id,
+            "message": "Statement generation initiated",
+        }
+    except ValueError as e:
+        logger.error(f"Failed to generate statement for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "status": "error",
+                "message": str(e)
+            }) from e
+    except Exception as e:
+        logger.error(f"Failed to generate statement for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "status": "error",
+                "message": "Failed to generate statement"
+            }) from e
