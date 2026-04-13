@@ -9,6 +9,7 @@ from backend.app.bank_account.schema import BankAccountBaseSchema
 if TYPE_CHECKING:
     from backend.app.auth.models import User
     from backend.app.transaction.models import Transaction
+    from backend.app.virtual_card.models import VirtualCard
 
 
 class BankAccount(BankAccountBaseSchema, table=True): # type: ignore
@@ -33,7 +34,6 @@ class BankAccount(BankAccountBaseSchema, table=True): # type: ignore
             server_default=text("CURRENT_TIMESTAMP"),
         )
     )
-
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(
@@ -59,4 +59,8 @@ class BankAccount(BankAccountBaseSchema, table=True): # type: ignore
     received_transactions: list["Transaction"] = Relationship(
         back_populates="receiver_account",
         sa_relationship_kwargs={"foreign_keys": "[Transaction.receiver_account_id]"},
+    )
+    virtual_cards: list["VirtualCard"] = Relationship(
+        back_populates="bank_account",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
