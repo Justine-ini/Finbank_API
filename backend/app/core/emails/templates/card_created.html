@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block title %}Virtual Card Created{% endblock %} {%
+block header %}Your Virtual Card Has Been Created{% endblock %} {% block content
+%}
+<p>Dear {{fullname}},</p>
+
+<p>
+  Your virtual card has been created successfully and is pending activation.
+  Here are your card details:
+</p>
+<div
+  style="
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+  "
+>
+  <ul style="list-style-type: none; padding-left: 0">
+    <li style="margin: 10px 0"><strong>Card Type</strong> {{card_type}}</li>
+    <li style="margin: 10px 0"><strong>Card Currency</strong> {{currency}}</li>
+    <li style="margin: 10px 0">
+      <strong>Card Number</strong> {{masked_card_number}}
+    </li>
+    <li style="margin: 10px 0">
+      <strong>Name on Card</strong> {{name_on_card}}
+    </li>
+    <li style="margin: 10px 0">
+      <strong>Daily Limit</strong> {{currency}} {{daily_limit}}
+    </li>
+    <li style="margin: 10px 0">
+      <strong>Monthly Limit</strong> {{currency}} {{monthly_limit}}
+    </li>
+  </ul>
+</div>
+
+<div
+  style="
+    background-color: #fff3cd;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+  "
+>
+  <p style="margin: 0">
+    <strong>Important</strong>: Your card is currently inactive. Our account
+    executives will review and activate your card shortly. You'll receive
+    another email once your card is activated and ready for use.
+  </p>
+</div>
+
+<p>
+  For security reasons, your card's CVV will be provided separately upon
+  activation
+</p>
+{% endblock %}

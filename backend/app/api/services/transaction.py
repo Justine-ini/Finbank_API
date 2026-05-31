@@ -860,7 +860,7 @@ async def prepare_statement_data(
                     "balance": account.balance,
                 })
         account_ids = [account.id for account in accounts]
-        
+
         transaction_stmt = select(Transaction).where(
             or_(
                 Transaction.sender_account_id.in_(account_ids),

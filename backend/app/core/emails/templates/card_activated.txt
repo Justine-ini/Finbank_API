@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block header %}Your Virtual Card is Now Active{% endblock %} {% block content
+%}
+Dear {{fullname}},
+
+
+Great News! Your virtual card has been activated and is now ready for use.
+Here are your card details:
+
+Card Details
+Card Type: {{card_type}}
+Card Number: {{masked_card_number}}
+CVV: {{cvv}}
+Expiry Date: {{expiry_date}}
+Daily Limit: {{currency}} {{daily_limit}}
+Monthly Limit: {{currency}} {{monthly_limit}}
+    </li>
+  </ul>
+</div>
+
+Your card is now active: You can:
+Make Purchases: Use your card for online and in-store purchases.
+Manage Your Card: Log in to your account to view transactions, set limits, and manage your card settings.
+Track Your Spending: Monitor your expenses and manage your budget.
+Top Up Your Card: Add funds to your card at any time.
+
+
+Security Tip: Always keep your card details secure and never share them with anyone.
+This is the only time we show you the full card details, so please make sure to save this information securely.
+If you have any questions or need assistance, our support team is here to help. Contact us at
+{% endblock %}

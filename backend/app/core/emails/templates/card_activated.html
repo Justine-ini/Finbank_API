@@ -1,0 +1,74 @@
+{% extends "base.html" %} {% block title %}Virtual Card Activated{% endblock %}
+{% block header %}Your Virtual Card is Now Active{% endblock %} {% block content
+%}
+<p>Dear {{fullname}},</p>
+
+<p>
+  Great News! Your virtual card has been activated and is now ready for use.
+  Here are your card details:
+</p>
+<div
+  style="
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+  "
+>
+  <h3 style="margin-top: 0">Card Details</h3>
+  <ul style="list-style-type: none; padding-left: 0">
+    <li style="margin: 10px 0"><strong>Card Type:</strong> {{card_type}}</li>
+    <li style="margin: 10px 0">
+      <strong>Card Number:</strong> {{masked_card_number}}
+    </li>
+    <li style="margin: 10px 0"><strong>CVV:</strong> {{cvv}}</li>
+    <li style="margin: 10px 0"><strong>Expiry Date:</strong> {{expiry_date}}</li>
+    <li style="margin: 10px 0">
+      <strong>Daily Limit:</strong> {{currency}} {{daily_limit}}
+    </li>
+    <li style="margin: 10px 0">
+      <strong>Monthly Limit:</strong> {{currency}} {{monthly_limit}}
+    </li>
+  </ul>
+</div>
+
+<div
+  style="
+    background-color: #e8f5e9;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+  "
+>
+  <p style="margin: 0"><strong>Your card is now active</strong>: You can:</p>
+  <ul style="list-style-type: none; padding-left: 0; margin-top: 10px">
+    <li style="margin: 10px 0">
+    <strong>Make Purchases</strong>: Use your card for online and in-store
+    purchases.
+    </li>
+    <li style="margin: 10px 0">
+    <strong>Manage Your Card</strong>: Log in to your account to view
+    transactions, set limits, and manage your card settings.
+    </li>
+    <li style="margin: 10px 0;">
+    <strong>Track Your Spending</strong>: Monitor your expenses and manage your budget.
+    </li>
+    <li style="margin: 10px 0">
+    <strong>Top Up Your Card</strong>: Add funds to your card at any time.
+    </li>
+</div>
+
+<div
+  style="
+    background-color: #fff3cd;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+  "
+>
+  <p style="margin: 0">
+    <strong>Security Tip</strong>: Always keep your card details secure and never share them with anyone.
+    This is the only time we show you the full card details, so please make sure to save this information securely.
+  </p>
+</div>
+{% endblock %}

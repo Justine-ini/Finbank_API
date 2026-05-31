@@ -1,0 +1,24 @@
+{% extends "base.txt" %}
+
+{% block header %}Your Virtual Card Has Been Created{% endblock %}
+
+{% block content %}
+Dear {{fullname}},
+
+Your virtual card has been created successfully and is pending activation.
+Here are your card details:
+    
+
+Card Type: {{card_type}}
+Card Currency: {{currency}}
+Card Number: {{masked_card_number}}
+Name on Card: {{name_on_card}}
+Daily Limit: {{currency}} {{daily_limit}}
+Monthly Limit: {{currency}} {{monthly_limit}}
+
+
+IMPORTANT: Your card is currently inactive. Our account executives will review and activate your card shortly. You'll receive another email once your card is activated and ready for use.
+
+For security reasons, your card's CVV will be provided separately upon activation
+
+{% endblock %}

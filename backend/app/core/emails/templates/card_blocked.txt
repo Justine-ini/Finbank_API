@@ -1,0 +1,26 @@
+{% extends "base.html" %} 
+{% block header %}Your Virtual Card Has Been Blocked{% endblock %} {% block content
+%}
+Dear {{fullname}},
+
+For your security, we have blocked your virtual card due to suspicious activity.
+
+Card Details
+
+    Card Type: {{card_type}}
+    Card Number: {{masked_card_number}}
+    Block Reason: {{block_reason}}
+    Additional Information: {{blocked_reason_description}}
+    Blocked At: {{blocked_at}}
+
+Next Steps: You can:
+    If you did not request this block, please contact our support team immediately to resolve the issue.
+
+    To unblock your card, please log in to your account and follow the instructions to verify your identity and unblock your card, or visit our nearest branch for assistance.
+
+    If you have any additional questions or need assistance, our support team is here to help.
+
+
+For your protection and to prevent unauthorized transactions, your card will remain blocked until you take action to unblock it. We apologize for any inconvenience this may cause and appreciate your understanding as we work to keep your account secure.
+ 
+{% endblock %}
