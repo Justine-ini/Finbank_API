@@ -10,7 +10,7 @@ Card Details
     Card Type: {{card_type}}
     Card Number: {{masked_card_number}}
     Block Reason: {{block_reason}}
-    Additional Information: {{blocked_reason_description}}
+    Additional Information: {{blocked_reason_details}}
     Blocked At: {{blocked_at}}
 
 Next Steps: You can:

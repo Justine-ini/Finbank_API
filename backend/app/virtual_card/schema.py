@@ -21,7 +21,7 @@ class VirtualCardBaseSchema(SQLModel):
         description="Type of the virtual card (debit or credit)"
     )
     card_provider: VirtualCardProviderEnum = Field(
-        default=VirtualCardProviderEnum.VISA, 
+        default=VirtualCardProviderEnum.VISA,
         description="Card provider (Visa, MasterCard, Verve)"
     )
     currency: VirtualCardCurrencyEnum = Field(

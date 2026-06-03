@@ -15,7 +15,7 @@ async def send_card_blocked_email(
     card_type: str,
     masked_card_number: str,
     blocked_reason: str,
-    blocked_reason_description: str,
+    blocked_reason_details: str,
     blocked_at: datetime
 )-> None:
     context = {
@@ -24,7 +24,7 @@ async def send_card_blocked_email(
         "currency": currency,
         "masked_card_number": masked_card_number,
         "blocked_reason": blocked_reason,
-        "blocked_reason_description": blocked_reason_description,
+        "blocked_reason_details": blocked_reason_details,
         "site_name": settings.SITE_NAME,
         "support_email": settings.SUPPORT_EMAIL,
         "blocked_at": blocked_at.strftime("%Y-%m-%d at %H:%M %S UTC"),
