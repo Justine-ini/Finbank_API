@@ -21,7 +21,7 @@ logger.add(
     format=LOG_FORMAT,
     level="DEBUG" if settings.ENVIRONMENT == "local" else "INFO",
     filter=lambda record: record["level"].no <= logger.level("WARNING").no,
-    rotation="10MB",
+    rotation="1 day",
     retention="1 day",
     compression="zip",
 )
@@ -30,7 +30,7 @@ logger.add(
     sink=os.path.join(LOG_DIR,"error.log"),
     format=LOG_FORMAT,
     level="ERROR",
-    rotation="10MB",
+    rotation="1 day",
     retention="1 day",
     compression="zip",
     backtrace=True,
