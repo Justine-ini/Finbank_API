@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     SUPPORT_EMAIL: str = ""
     JWT_SECRET_KEY: str = ""
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30 if ENVIRONMENT == "local" else 15
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 3
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440 if ENVIRONMENT == "local" else 15
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 5
     COOKIE_SECURE: bool = False if ENVIRONMENT == "local" else True
     COOKIE_ACCESS_NAME: str = "access_token"
     COOKIE_REFRESH_NAME: str = "refresh_token"
