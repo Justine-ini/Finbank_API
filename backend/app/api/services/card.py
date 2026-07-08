@@ -52,7 +52,7 @@ async def create_virtual_card(
             )
         bank_account, user = account_user
 
-        if bank_account.status != AccountStatusEnum.ACTIVE:
+        if bank_account.account_status != AccountStatusEnum.Active:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail= {
@@ -63,7 +63,7 @@ async def create_virtual_card(
         
         card_currency = card_data.get("currency")
 
-        if card_currency != bank_account.currency:
+        if card_currency != bank_account.account_currency:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail= {
@@ -73,16 +73,24 @@ async def create_virtual_card(
             )
         
         cleaned_data = card_data.copy()
-        cleaned_data.pop("currency", None)  # Remove currency as it's not needed for card creation
+        # Keep currency because the virtual card table requires it when saving the card.
         cleaned_data.pop("card_status", None)  # Remove card_status as it's not needed for card creation
         cleaned_data.pop("is_active", None)  # Remove is_active as it's not needed for card creation
         cleaned_data.pop("cvv_hash", None)  # Remove cvv_hash as it's not needed for card creation
         cleaned_data.pop("available_balance", None)  # Remove available_balance as it's not needed for card creation
         cleaned_data.pop("total_topped_amount", None)  # Remove total_topped_amount as it's not needed for card creation
         cleaned_data.pop("card_metadata", None)  # Remove card_metadata as it's not needed for card creation
+        cleaned_data.pop("card_number", None)  # Remove client-provided card_number so the system-generated value is used
 
         provider = cleaned_data.get("card_provider")
-        if provider not in VirtualCardProviderEnum.__members__:
+        # Normalize provider strings like "Visa" into the enum expected by card generation.
+        try:
+            provider = (
+                provider
+                if isinstance(provider, VirtualCardProviderEnum)
+                else VirtualCardProviderEnum(provider)
+            )
+        except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, 
                 detail= {
@@ -90,6 +98,7 @@ async def create_virtual_card(
                     "message": "Invalid card provider"
                 }
             )
+        cleaned_data["card_provider"] = provider
 
 
         try:
@@ -112,6 +121,7 @@ async def create_virtual_card(
             is_active=True,
             available_balance=0.0,
             total_topped_amount=0.0,
+            last_transaction_amount=0.0,  # Initialize new cards with no transaction amount yet
             last_topped_at=datetime.now(timezone.utc),
             card_metadata={
                 "created_by": str(user_id),
@@ -186,17 +196,18 @@ async def block_virtual_card(
         block_time = datetime.now(timezone.utc)
         
         card.card_status = VirtualCardStatusEnum.BLOCKED
-        card.blocked_reason = block_data.get("block_reason")
-        card.blocked_reason_details = block_data.get("block_reason_details")
+        card.block_reason = block_data.get("block_reason")
+        card.block_reason_details = block_data.get("block_reason_details")
         card.blocked_by = blocked_by
         card.blocked_at = block_time
-        if not card.card_metadata:
-            card.card_metadata = {}
-        card.card_metadata.update({
+
+        existing_metadata = card.card_metadata or {}
+        card.card_metadata = {
+            **existing_metadata,
             "blocked_by": str(blocked_by),
             "blocked_at": block_time.isoformat(),
             "block_reason": block_data["block_reason"].value,
-        })
+        }
 
         session.add(card)
         await session.commit()
@@ -368,7 +379,9 @@ async def activate_virtual_card(
                 }
             )
 
-        if card_data.card_status == VirtualCardStatusEnum.ACTIVE:
+        card, bank_account, card_owner = card_data
+
+        if card.card_status == VirtualCardStatusEnum.ACTIVE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail= {
@@ -376,9 +389,8 @@ async def activate_virtual_card(
                     "message": "Virtual card is already active"
                 }
             )
-        card, bank_account, card_owner = card_data
 
-        executive = await session.get(User, activated_by)
+        executive = await session.get(User, activated_by)  
         if not executive or executive.role != RoleChoicesSchema.ACCOUNT_EXECUTIVE:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -391,13 +403,12 @@ async def activate_virtual_card(
         card.card_status = VirtualCardStatusEnum.ACTIVE
         card.cvv_hash = cvv_hash
 
-        if not card.card_metadata:
-            card.card_metadata = {}
-
-        card.card_metadata.update({
+        existing_metadata = card.card_metadata or {}
+        card.card_metadata = {
+            **existing_metadata,
             "activated_by": str(activated_by),
             "activated_at": datetime.now(timezone.utc).isoformat(),
-        })
+        }
 
         session.add(card)
         await session.commit()

@@ -22,9 +22,12 @@ async def create_deposit(
     current_user: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
+    current_user_id = current_user.id
+    current_user_email = current_user.email
+    current_user_role = current_user.role
 
     try:
-        if current_user.role != RoleChoicesSchema.TELLER:
+        if current_user_role != RoleChoicesSchema.TELLER:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={
@@ -35,7 +38,7 @@ async def create_deposit(
         new_transaction, updated_account, account_owner = await process_deposit(
             amount=deposit_data.amount,
             account_id=deposit_data.account_id,
-            teller_id=current_user.id,
+            teller_id=current_user_id,
             description=deposit_data.description,
             session=session
         )
@@ -91,7 +94,7 @@ async def create_deposit(
             }
         }
     except HTTPException as http_ex:
-        logger.warning(f"Deposit failed for account {deposit_data.account_id} by teller {current_user.email}: {http_ex.detail}")
+        logger.warning(f"Deposit failed for account {deposit_data.account_id} by teller {current_user_email}: {http_ex.detail}")
         raise http_ex
     except Exception as e:
         logger.error(f"Failed to process deposit: {str(e)}")
