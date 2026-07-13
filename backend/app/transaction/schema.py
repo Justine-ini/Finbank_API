@@ -4,10 +4,15 @@ from decimal import Decimal
 from datetime import datetime
 from typing_extensions import Annotated
 from sqlmodel import SQLModel, Field, Column
-from backend.app.transaction.enums import TransactionTypeEnum, TransactionStatusEnum, TransactionCategoryEnum
+from backend.app.transaction.enums import (
+    TransactionTypeEnum, 
+    TransactionStatusEnum, 
+    TransactionCategoryEnum
+)
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Enum as SAEnum
+from backend.app.core.ai.enums import AIReviewStatusEnum
 
 
 class TransactionBaseSchema(SQLModel):
@@ -52,6 +57,7 @@ class TransactionBaseSchema(SQLModel):
     transaction_metadata: dict | None = Field(default=None, sa_column=Column(JSONB))
 
     failed_reason: str | None = Field(default=None, max_length=255)
+    ai_review_status: AIReviewStatusEnum | None = Field(default=None)
 
 class TransactionCreateSchema(TransactionBaseSchema):
     pass
@@ -184,3 +190,30 @@ class TransactionReviewSchema(SQLModel):
     is_fraud: bool
     notes: str | None = None
     approved_transaction: bool = False
+
+class RiskHistoryParams(SQLModel):
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    min_risk_score: float | None = None
+    user_id: str | None = None
+    skip: int = 0
+    limit: int = 20
+
+class RiskHistoryItemSchema(SQLModel):
+    transaction_id: str
+    reference: str
+    amount: str
+    created_at: datetime
+    risk_score: float
+    risk_factors: dict
+    reviewed_status: AIReviewStatusEnum | None = None
+    is_confirmed_fraud: bool | None = None
+    reviewed_by: str | None = None
+    review_details: dict | None = None
+
+
+class PaginatedRiskHistoryResponseSchema(SQLModel):
+    total: int
+    skip: int
+    limit: int
+    items: list[RiskHistoryItemSchema]
